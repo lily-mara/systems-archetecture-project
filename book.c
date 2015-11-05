@@ -1,3 +1,4 @@
+/*
 #include<stdlib.h>
 #include<string.h>
 
@@ -32,3 +33,4 @@ struct book *new_book_at_beginning(char *title, struct book *head)
 	book->next = head;
 	return book;
 }
+*/
