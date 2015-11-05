@@ -1,4 +1,15 @@
-#ifndef _MY_BOOK_MANAGER_H
-#define _MY_BOOK_MANAGER_H
+struct book {
+	long l_book_id;
+	char *ptr_title;
+	int i_year;
+	float f_quality;
+	long l_author_id;
+	char *ptr_name;
+	char *ptr_surname;
+	struct book *next;
+};
 
-#endif /* _MY_BOOK_MANAGER_H */
+//Prototypes
+void showMenu(void);
+void insert(void);
+struct book *new_book(void);
