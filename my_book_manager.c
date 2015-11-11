@@ -43,6 +43,7 @@ int main(void){
 				case 4:
 					break;
 				case 5:
+					RemoveByID();
 					break;
 				case 6:
 					break;
@@ -62,7 +63,6 @@ int main(void){
 
 void showMenu(void){
 
-
 	printf("==================================================");
 	printf("\n[*][2015][SAUCEM APPS][My Books] =================");
 	printf("\n==================================================");
@@ -75,9 +75,21 @@ void showMenu(void){
 	cmdCount++;
 	return;
 }
+
+void RemoveByID(void){
+	char *ptr = NULL;
+	char *ptr1 = NULL;
+	size_t IDLength = 0;
+	long IDToRemove;
+	printf("\t\tType the name of the book you want to remove: ");
+	IDLength = getline(&ptr, &IDLength, stdin);
+	IDToRemove = strtol(ptr, &ptr1, 10);
+	return;
+}
+
 void insert(void){
 	size_t sentenceLenght=0;//initialized to 0
-	char *ptr;//pointer which stores the fist chars direction of the sentence
+	char *ptr = NULL;//pointer which stores the fist chars direction of the sentence
 	struct book bookNode = *new_book();
 	struct book *ptrNode;
 	ptrNode = &bookNode;
@@ -99,11 +111,14 @@ to the parameters of the node
 
 	do{
 		do{
+			//scanf("%ld", &ID);
 			sentenceLenght=getline(&ptr/*double pointer*/,&sentenceLenght,stdin);
 			if(sentenceLenght==-1){
 				printf("\n\t\tERROR allocating memory\n");
 			}
 		}while(sentenceLenght==-1);
+		//strol
+		//strof (floats)
 		ID=atoi(ptr);
 		if(ID==0){printf("\n\t\tERROR. Introduce a number\n");}
 	}while(ID==0);
