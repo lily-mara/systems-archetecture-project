@@ -5,6 +5,7 @@ struct book {
 	long l_book_id;
 	char *ptr_title;
 	int i_year;
+	int i_numb_pages;
 	float f_quality;
 	long l_author_id;
 	char *ptr_name;
@@ -13,9 +14,5 @@ struct book {
 };
 
 //Prototypes
-void showMenu(void);
-void insert(void);
-void RemoveByID(void);
-struct book *new_book(void);
 // wewertwd
 #endif /* ifndef _MY_BOOK_MANAGER_H_ */

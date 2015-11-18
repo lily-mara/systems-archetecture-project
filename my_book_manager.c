@@ -11,24 +11,15 @@
 #include<stdlib.h>
 #include<string.h>
 
-//#include "my_book_manager.h"
+#include "io.h"
+
+#include "my_book_manager.h"
 
 //global variables:
 int cmdCount = 0;
 int DynamicCount=0;//global variable that takes the account of memory leaks
 
 //===================================================================================================================================================================
-struct book {
-	long l_book_id;
-	char *ptr_title;
-	int i_year;
-	int i_numb_pages;
-	float f_quality;
-	long l_author_id;
-	char *ptr_name;
-	char *ptr_surname;
-	struct book *next;
-};
 
 //Prototypes
 void ShowMenu(struct book *first);
@@ -55,16 +46,6 @@ void ChangeSurname(struct book *ptr,struct book *first);
 void RecursiveModification(struct book *ptr,struct book *first);
 void Remove(struct book *first);
 struct book *NextIDSearch(long ID,struct book *first);
-
-
-int main(void){
-	//We crreate the first book of the list:
-	struct book first1={20001,"El Quijote",1605,1376,100.000000,10001,"Miguel","de Cervantes Saavedra", NULL};
-	struct book *first=&first1;
-
-	ShowMenu(first);
-	return 0;
-}
 
 
 void ShowMenu(struct book *first)
@@ -111,10 +92,10 @@ void ShowMenu(struct book *first)
 				ShowMenu(first);
 				break;
 			case 6:
-
+				save_books_to_filename(first, "books.dat");
 				break;
 			case 7:
-
+				first = load_books_from_filename("books.dat");
 				break;
 			case 8:
 
