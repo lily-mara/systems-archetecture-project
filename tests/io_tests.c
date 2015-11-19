@@ -6,8 +6,8 @@
 #include <cmocka.h>
 #include <string.h>
 
-#include "../book.h"
-#include "../io.h"
+#include "book.h"
+#include "io.h"
 
 void assert_book_eq(struct book *x, struct book *y) {
 	while (x != NULL || y != NULL) {
