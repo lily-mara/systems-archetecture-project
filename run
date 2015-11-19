@@ -1,0 +1,7 @@
+#!/bin/sh
+
+mkdir -p build
+cd build
+cmake ..
+make my_book_manager
+src/my_book_manager
