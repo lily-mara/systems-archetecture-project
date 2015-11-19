@@ -1,0 +1,3 @@
+#!/bin/sh
+
+valgrind --error-exitcode=1 --read-var-info=yes --leak-check=full --show-leak-kinds=all -v ./my_book_manager < $1
