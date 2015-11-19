@@ -16,5 +16,9 @@ struct book {
 void free_list(struct book *);
 void free_node(struct book *);
 struct book *remove_by_id(struct book *, long);
+struct book *find_by_id(struct book *head, long id);
+struct book *find_by_author_id(struct book *first, long id);
+struct book *new_book();
+void append(struct book **head, struct book *to_append);
 
 #endif /* _BOOK_H_ */

@@ -6,8 +6,9 @@
 #include "book.h"
 
 /*
- * This file contains the IO logic for importing and exporting the book list to
- * files on the filesystem.
+ * This file contains the IO logic for the book manager program. The first
+ * section contains the functions used for importing and exporting the book list
+ * to files on the filesystem.
  *
  * The first bytes of the file are a size_t corresponding to the number of
  * elements stored in the file.
@@ -26,6 +27,8 @@
  * title (char *)
  * name (char *)
  * surname (char *)
+ *
+ * The next functions deal with reading data of various types from stdin.
  */
 
 #define _early_return_ne(x,y) if(x != y){return -1;}
@@ -199,4 +202,47 @@ struct book *load_books_from_fp(FILE *fp)
 	}
 
 	return head;
+}
+
+long get_long()
+{
+	char *aux = get_string();
+	char *aux2;
+	long out = strtol(aux, &aux2, 10);
+
+	free(aux);
+
+	return out;
+}
+
+int get_int()
+{
+	char *aux = get_string();
+	char *aux2;
+	int out = strtol(aux, &aux2, 10);
+
+	free(aux);
+
+	return out;
+}
+
+float get_float()
+{
+	char *aux = get_string();
+	char *aux2;
+	float out = strtof(aux, &aux2);
+
+	free(aux);
+
+	return out;
+}
+
+char *get_string()
+{
+	size_t size = 0;
+	char *ptr = NULL;
+	size = getline(&ptr, &size, stdin);
+	ptr[size-1] = '\0';
+
+	return ptr;
 }

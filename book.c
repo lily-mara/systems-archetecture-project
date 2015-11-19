@@ -3,6 +3,34 @@
 
 #include "book.h"
 
+struct book *find_by_id(struct book *head, long id)
+{
+	while (head != NULL)
+	{
+		if (head->l_book_id == id)
+		{
+			return head;
+		}
+		head = head->next;
+	}
+
+	return NULL;
+}
+
+struct book *find_by_author_id(struct book *head, long id)
+{
+	while (head != NULL)
+	{
+		if (head->l_author_id == id)
+		{
+			return head;
+		}
+		head = head->next;
+	}
+
+	return NULL;
+}
+
 void free_list(struct book *head)
 {
 	struct book *temp;
@@ -43,4 +71,30 @@ void free_node(struct book *node)
 	free(node->ptr_title);
 	free(node->ptr_surname);
 	free(node);
+}
+
+
+struct book *new_book()
+{
+	struct book *new = calloc(sizeof(struct book), 1);
+
+	return new;
+}
+
+void append(struct book **head, struct book *to_append)
+{
+	struct book *tmp = *head;
+
+	if (*head == NULL)
+	{
+		*head = to_append;
+	}
+	else
+	{
+		while (tmp->next != NULL)
+		{
+			tmp = tmp->next;
+		}
+		tmp->next = to_append;
+	}
 }

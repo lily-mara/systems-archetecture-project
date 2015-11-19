@@ -1,17 +1,17 @@
-HEADERS=$(wildcard *.h)
-SRCS=$(wildcard *.c)
+SRCS=io.c book.c
 OBJS=$(subst .c,.o,$(SRCS))
 TEST_SRCS=$(wildcard tests/*.c)
 TEST_OBJS=$(subst .c,.o,$(TEST_SRCS))
+MAIN=my_book_manager
 OPTS=-Werror -Wall -ftrapv -g
 LIBS=-L /usr/local/lib/ -lcmocka
 
 .PHONY: clean run_tests
 
-my_book_manager: $(OBJS) $(SRCS) $(HEADERS)
-	gcc $(OPTS) $(OBJS) -o $@ $(LIBS)
+$(MAIN): $(MAIN).o $(OBJS) $(SRCS)
+	gcc $(MAIN).o $(OPTS) $(OBJS) -o $@ $(LIBS)
 
-test: $(OBJS) $(SRCS) $(HEADERS) $(TEST_SRCS) $(TEST_OBJS)
+test: $(OBJS) $(SRCS) $(TEST_SRCS) $(TEST_OBJS)
 	gcc $(OPTS) $(OBJS) $(TEST_OBJS) -o $@ $(LIBS)
 
 run_tests: test
