@@ -42,9 +42,8 @@ void recursive_modification(struct book *ptr, struct prog_info *info);
 void remove_book(struct prog_info *info);
 struct book *next_ID_search(long ID, struct book *first);
 
-int main(void){
-	// struct book Quijote = {20001, "El Quijote", 1605, 1376, 100.000000, 10001, "Miguel", "de Cervantes Saavedra", NULL};
-
+int main(void)
+{
 	struct prog_info info;
 
 	info.first = NULL;
