@@ -26,3 +26,6 @@ add_test(test_insert_one_save_load_valgrind ${VALGRIND_TEST}
 
 add_test(test_insert_five_save_load_valgrind ${VALGRIND_TEST}
 	${VALGRIND_TEST_DIR}/insert_five_save_load)
+
+add_test(test_lots_of_wrong_numbers_valgrind ${VALGRIND_TEST}
+	${VALGRIND_TEST_DIR}/lots_of_wrong_numbers)
