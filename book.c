@@ -3,8 +3,6 @@
 
 #include "book.h"
 
-void free_node(struct book *);
-
 void free_list(struct book *head)
 {
 	struct book *temp;
@@ -18,7 +16,7 @@ void free_list(struct book *head)
 	}
 }
 
-struct book *remove_by_id(struct book *head, int id)
+struct book *remove_by_id(struct book *head, long id)
 {
 	struct book *temp = head, *prev = head;
 

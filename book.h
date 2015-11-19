@@ -14,6 +14,7 @@ struct book {
 };
 
 void free_list(struct book *);
-struct book *remove_by_id(struct book *, int);
+void free_node(struct book *);
+struct book *remove_by_id(struct book *, long);
 
 #endif /* _BOOK_H_ */
