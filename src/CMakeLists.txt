@@ -14,3 +14,15 @@ add_test(test_insert_one_valgrind ${VALGRIND_TEST}
 
 add_test(test_insert_five_valgrind ${VALGRIND_TEST}
 	${VALGRIND_TEST_DIR}/insert_five)
+
+add_test(test_insert_one_save_valgrind ${VALGRIND_TEST}
+	${VALGRIND_TEST_DIR}/insert_one_save)
+
+add_test(test_insert_five_save_valgrind ${VALGRIND_TEST}
+	${VALGRIND_TEST_DIR}/insert_five_save)
+
+add_test(test_insert_one_save_load_valgrind ${VALGRIND_TEST}
+	${VALGRIND_TEST_DIR}/insert_one_save_load)
+
+add_test(test_insert_five_save_load_valgrind ${VALGRIND_TEST}
+	${VALGRIND_TEST_DIR}/insert_five_save_load)
