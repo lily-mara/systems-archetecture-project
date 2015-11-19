@@ -92,10 +92,10 @@ void ShowMenu(struct book *first)
 				ShowMenu(first);
 				break;
 			case 6:
-				save_books_to_filename(first, "books.dat");
+				export_books(first, "books.dat");
 				break;
 			case 7:
-				first = load_books_from_filename("books.dat");
+				first = import_books("books.dat");
 				break;
 			case 8:
 

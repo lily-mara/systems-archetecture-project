@@ -6,7 +6,7 @@
 #include <cmocka.h>
 #include <string.h>
 
-#include "../my_book_manager.h"
+#include "../book.h"
 #include "../io.h"
 
 void assert_book_eq(struct book *x, struct book *y) {
@@ -117,13 +117,13 @@ void test_write_one_to_file_and_retrive(void **state) {
 	struct book in = {20002,"El Quijote",1605,1376,100.0,10001,"Miguel","de Cervantes Saavedra", NULL};
 	struct book *out;
 
-	int status = save_books_to_filename(&in, "__test_write_one_to_file_and_retrive.test.dat");
+	int status = export_books(&in, "__test_write_one_to_file_and_retrive.test.dat");
 	assert_true(status == 0);
 
-	out = load_books_from_filename("__test_write_one_to_file_and_retrive.test.dat");
+	out = import_books("__test_write_one_to_file_and_retrive.test.dat");
 
 	assert_book_eq(&in, out);
-	free(out);
+	free_list(out);
 }
 
 void test_write_two_to_file_and_retrive(void **state) {
@@ -133,13 +133,13 @@ void test_write_two_to_file_and_retrive(void **state) {
 
 	struct book *out;
 
-	int status = save_books_to_filename(&in, "__test_write_two_to_file_and_retrive.test.dat");
+	int status = export_books(&in, "__test_write_two_to_file_and_retrive.test.dat");
 	assert_true(status == 0);
 
-	out = load_books_from_filename("__test_write_two_to_file_and_retrive.test.dat");
+	out = import_books("__test_write_two_to_file_and_retrive.test.dat");
 
 	assert_book_eq(&in, out);
-	free(out);
+	free_list(out);
 }
 
 void test_write_three_to_file_and_retrive(void **state) {
@@ -150,13 +150,13 @@ void test_write_three_to_file_and_retrive(void **state) {
 
 	struct book *out;
 
-	int status = save_books_to_filename(&in, "__test_write_three_to_file_and_retrive.test.dat");
+	int status = export_books(&in, "__test_write_three_to_file_and_retrive.test.dat");
 	assert_true(status == 0);
 
-	out = load_books_from_filename("__test_write_three_to_file_and_retrive.test.dat");
+	out = import_books("__test_write_three_to_file_and_retrive.test.dat");
 
 	assert_book_eq(&in, out);
-	free(out);
+	free_list(out);
 }
 
 int main(void) {

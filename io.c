@@ -3,7 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include "io.h"
-#include "my_book_manager.h"
+#include "book.h"
 
 /*
  * This file contains the IO logic for importing and exporting the book list to
@@ -34,7 +34,7 @@
 struct book *load_books_from_fp(FILE *);
 int save_books_to_fp(struct book *, FILE *);
 
-int save_books_to_filename(struct book *head, char *filename)
+int export_books(struct book *head, char *filename)
 {
 	FILE *fp = fopen(filename, "w");
 	_early_return_null(fp);
@@ -45,7 +45,7 @@ int save_books_to_filename(struct book *head, char *filename)
 	return status;
 }
 
-struct book *load_books_from_filename(char *filename)
+struct book *import_books(char *filename)
 {
 	struct book *head;
 	FILE *fp = fopen(filename, "r");
@@ -133,28 +133,28 @@ struct book *load_book_from_fp(FILE *fp)
 	b->next = NULL;
 
 	bytes_read = fread(&b->l_book_id, sizeof(long), 1, fp);
-	/*assert(bytes_read == 1);*/
+	assert(bytes_read == 1);
 
 	bytes_read = fread(&b->l_author_id, sizeof(long), 1, fp);
-	/*assert(bytes_read == 1);*/
+	assert(bytes_read == 1);
 
 	bytes_read = fread(&b->i_year, sizeof(int), 1, fp);
-	/*assert(bytes_read == 1);*/
+	assert(bytes_read == 1);
 
 	bytes_read = fread(&b->i_numb_pages, sizeof(int), 1, fp);
-	/*assert(bytes_read == 1);*/
+	assert(bytes_read == 1);
 
 	bytes_read = fread(&b->f_quality, sizeof(float), 1, fp);
-	/*assert(bytes_read == 1);*/
+	assert(bytes_read == 1);
 
 	bytes_read = fread(&title_chars, sizeof(size_t), 1, fp);
-	/*assert(bytes_read == 1);*/
+	assert(bytes_read == 1);
 
 	bytes_read = fread(&name_chars, sizeof(size_t), 1, fp);
-	/*assert(bytes_read == 1);*/
+	assert(bytes_read == 1);
 
 	bytes_read = fread(&surname_chars, sizeof(size_t), 1, fp);
-	/*assert(bytes_read == 1);*/
+	assert(bytes_read == 1);
 
 	b->ptr_title = malloc(title_chars * sizeof(char) + 1);
 	b->ptr_name = malloc(name_chars * sizeof(char) + 1);
@@ -165,14 +165,13 @@ struct book *load_book_from_fp(FILE *fp)
 	b->ptr_surname[surname_chars] = 0;
 
 	bytes_read = fread(b->ptr_title, sizeof(char), title_chars, fp);
-	/*assert(bytes_read == title_chars);*/
+	assert(bytes_read == title_chars);
 
 	bytes_read = fread(b->ptr_name, sizeof(char), name_chars, fp);
-	/*assert(bytes_read == name_chars);*/
+	assert(bytes_read == name_chars);
 
 	bytes_read = fread(b->ptr_surname, sizeof(char), surname_chars, fp);
-	/*assert(bytes_read == surname_chars);*/
-	assert(bytes_read != 388388);
+	assert(bytes_read == surname_chars);
 
 	return b;
 }

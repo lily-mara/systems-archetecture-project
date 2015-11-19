@@ -1,36 +1,48 @@
-/*
 #include<stdlib.h>
 #include<string.h>
 
 #include "book.h"
 
-struct book *new_book(char *title)
-{
-	struct book *book = calloc(sizeof(struct book), 1);
-	book->ptr_title = malloc(sizeof(char) * strlen(title) + 1);
-	strcpy(book->ptr_title, title);
+void free_node(struct book *);
 
-	return book;
+void free_list(struct book *head)
+{
+	struct book *temp;
+
+	while (head != NULL)
+	{
+		temp = head;
+		head = head->next;
+
+		free_node(temp);
+	}
 }
 
-struct book *new_book_at_end(char *title, struct book *head)
+struct book *remove_by_id(struct book *head, int id)
 {
-	struct book *book = new_book(title);
+	struct book *temp = head, *prev = head;
 
-	while (head->next != NULL)
+	while (head != NULL)
 	{
+		prev = temp;
+		temp = head;
 		head = head->next;
+
+		if (temp->l_book_id == id)
+		{
+			free_node(temp);
+
+			prev->next = head;
+		}
 	}
 
-	head->next = book;
-
-	return book;
+	return head;
 }
 
-struct book *new_book_at_beginning(char *title, struct book *head)
+void free_node(struct book *node)
 {
-	struct book *book = new_book(title);
-	book->next = head;
-	return book;
+	free(node->ptr_name);
+	free(node->ptr_title);
+	free(node->ptr_surname);
+	free(node);
 }
-*/
