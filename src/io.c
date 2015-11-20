@@ -34,6 +34,8 @@
 #define _early_return_ne(x,y) if(x != y){return -1;}
 #define _early_return_null(x) if(x == NULL){return -1;}
 
+#define ERROR_INVALID_NUMBER "\tInvalid. Expected number, got '%s'. Please input number: "
+
 struct book *load_books_from_fp(FILE *);
 int save_books_to_fp(struct book *, FILE *);
 
@@ -210,7 +212,15 @@ long get_long()
 	char *aux2;
 	long out = strtol(aux, &aux2, 10);
 
-	free(aux);
+	if (aux2 == aux) {
+		printf(ERROR_INVALID_NUMBER, aux);
+		free(aux);
+		return get_int();
+	}
+	else
+	{
+		free(aux);
+	}
 
 	return out;
 }
@@ -221,7 +231,16 @@ int get_int()
 	char *aux2;
 	int out = strtol(aux, &aux2, 10);
 
-	free(aux);
+
+	if (aux2 == aux) {
+		printf(ERROR_INVALID_NUMBER, aux);
+		free(aux);
+		return get_int();
+	}
+	else
+	{
+		free(aux);
+	}
 
 	return out;
 }
@@ -232,7 +251,15 @@ float get_float()
 	char *aux2;
 	float out = strtof(aux, &aux2);
 
-	free(aux);
+	if (aux2 == aux) {
+		printf(ERROR_INVALID_NUMBER, aux);
+		free(aux);
+		return get_int();
+	}
+	else
+	{
+		free(aux);
+	}
 
 	return out;
 }
