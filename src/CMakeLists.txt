@@ -3,29 +3,23 @@ file(GLOB SOURCES *.c)
 set(VALGRIND_TEST_DIR ${PROJECT_SOURCE_DIR}/valgrind_tests)
 set(VALGRIND_TEST ${VALGRIND_TEST_DIR}/run_test)
 
+function(add_valgrind_test filename)
+	foreach(loop_var ${ARGN})
+		list(APPEND other_args "${VALGRIND_TEST_DIR}/${loop_var}")
+	endforeach(loop_var)
+
+	add_test(test_${filename}_valgrind ${VALGRIND_TEST}
+		${VALGRIND_TEST_DIR}/${filename} ${other_args} ${VALGRIND_TEST_DIR}/exit)
+endfunction(add_valgrind_test)
+
 add_executable(my_book_manager ${SOURCES})
 add_library(books io.c book.c)
 
-add_test(test_immediate_exit_valgrind ${VALGRIND_TEST}
-	${VALGRIND_TEST_DIR}/immediate_exit)
-
-add_test(test_insert_one_valgrind ${VALGRIND_TEST}
-	${VALGRIND_TEST_DIR}/insert_one)
-
-add_test(test_insert_five_valgrind ${VALGRIND_TEST}
-	${VALGRIND_TEST_DIR}/insert_five)
-
-add_test(test_insert_one_save_valgrind ${VALGRIND_TEST}
-	${VALGRIND_TEST_DIR}/insert_one_save)
-
-add_test(test_insert_five_save_valgrind ${VALGRIND_TEST}
-	${VALGRIND_TEST_DIR}/insert_five_save)
-
-add_test(test_insert_one_save_load_valgrind ${VALGRIND_TEST}
-	${VALGRIND_TEST_DIR}/insert_one_save_load)
-
-add_test(test_insert_five_save_load_valgrind ${VALGRIND_TEST}
-	${VALGRIND_TEST_DIR}/insert_five_save_load)
-
-add_test(test_lots_of_wrong_numbers_valgrind ${VALGRIND_TEST}
-	${VALGRIND_TEST_DIR}/lots_of_wrong_numbers)
+add_valgrind_test(exit)
+add_valgrind_test(insert_one)
+add_valgrind_test(insert_one insert_one_save)
+add_valgrind_test(insert_one insert_one_save_load)
+add_valgrind_test(insert_five)
+add_valgrind_test(insert_five insert_five_save)
+add_valgrind_test(insert_five insert_five_save_load)
+add_valgrind_test(lots_of_wrong_numbers)

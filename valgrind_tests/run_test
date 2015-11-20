@@ -1,3 +1,12 @@
 #!/bin/sh
 
-valgrind --error-exitcode=1 --read-var-info=yes --leak-check=full --show-leak-kinds=all -v ./my_book_manager < $1
+stat $* > /dev/null 2> /dev/null
+status=$?
+
+if [ $status = 1 ]
+then
+	echo One or more of the files provided as arguments did not exist! Exiting.
+	exit 1
+fi
+
+cat $* | valgrind --error-exitcode=1 --read-var-info=yes --leak-check=full --show-leak-kinds=all -v ./my_book_manager
