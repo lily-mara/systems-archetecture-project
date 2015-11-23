@@ -187,6 +187,15 @@ struct book_node *load_books_from_fp(FILE *fp)
 		return NULL;
 	}
 
+	fseek(fp, 0L, SEEK_END);
+	i = ftell(fp);
+	fseek(fp, 0L, SEEK_SET);
+
+	if (i == 0)
+	{
+		return NULL;
+	}
+
 	i = fread(&elements, sizeof(size_t), 1, fp);
 	/*assert(i */
 
