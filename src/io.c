@@ -36,8 +36,8 @@
 
 #define ERROR_INVALID_NUMBER "\tInvalid. Expected number, got '%s'. Please input number: "
 
-struct book *load_books_from_fp(FILE *);
-int save_books_to_fp(struct book *, FILE *);
+static struct book *load_books_from_fp(FILE *);
+static int save_books_to_fp(struct book *, FILE *);
 
 int export_books(struct book *head, char *filename)
 {
