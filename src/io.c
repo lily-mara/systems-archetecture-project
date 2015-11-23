@@ -275,15 +275,17 @@ char *get_string()
 	char *ptr = NULL;
 	size = getline(&ptr, &size, stdin);
 
-	if ((int)ptr[0] == 0)
+	if ((int)size == -1)
 	{
 		// TODO: return to menu if the user enters CTRL-D
-		printf("\nTO_DO\n");
+		printf("\n");
+	}
+	else
+	{
+		ptr[size-1] = '\0';
 	}
 
-	ptr[size-1] = '\0';
-
-	if (strlen(ptr) == 0)
+	if ((int)size == -1 || strlen(ptr) <= 0)
 	{
 		free(ptr);
 		printf("You may not input an empty string: ");
