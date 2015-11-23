@@ -9,7 +9,7 @@
 
 static void *save_thread_entrypoint(void *);
 
-void start_autosave(pthread_t *p, struct book *books)
+void start_autosave(pthread_t *p, struct book_node *books)
 {
 	int status = pthread_create(p, NULL, save_thread_entrypoint, books);
 	if (status)
@@ -21,7 +21,7 @@ void start_autosave(pthread_t *p, struct book *books)
 
 static void *save_thread_entrypoint(void *b)
 {
-	struct book *books = (struct book *)b;
+	struct book_node *books = (struct book_node *)b;
 #ifdef DEBUG
 	int status;
 #endif /* DEBUG */

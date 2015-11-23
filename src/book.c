@@ -1,15 +1,18 @@
-#include<stdlib.h>
-#include<string.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "book.h"
 
-struct book *find_by_id(struct book *head, long id)
+static int count_with_id(struct book_node *head, long id);
+
+struct book *find_by_id(struct book_node *head, long id)
 {
 	while (head != NULL)
 	{
-		if (head->l_book_id == id)
+		if (head->book->l_book_id == id)
 		{
-			return head;
+			return head->book;
 		}
 		head = head->next;
 	}
@@ -17,13 +20,13 @@ struct book *find_by_id(struct book *head, long id)
 	return NULL;
 }
 
-struct book *find_by_author_id(struct book *head, long id)
+struct book *find_by_author_id(struct book_node *head, long id)
 {
 	while (head != NULL)
 	{
-		if (head->l_author_id == id)
+		if (head->book->l_author_id == id)
 		{
-			return head;
+			return head->book;
 		}
 		head = head->next;
 	}
@@ -31,9 +34,9 @@ struct book *find_by_author_id(struct book *head, long id)
 	return NULL;
 }
 
-void free_list(struct book *head)
+void free_list(struct book_node *head)
 {
-	struct book *temp;
+	struct book_node *temp;
 
 	while (head != NULL)
 	{
@@ -44,9 +47,15 @@ void free_list(struct book *head)
 	}
 }
 
-struct book *remove_by_id(struct book *head, long id)
+void free_node(struct book_node *node)
 {
-	struct book *temp = head, *prev = head;
+	free_book(node->book);
+	free(node);
+}
+
+struct book_node *remove_by_id(struct book_node *head, long id)
+{
+	struct book_node *temp = head, *prev = head;
 
 	while (head != NULL)
 	{
@@ -54,7 +63,7 @@ struct book *remove_by_id(struct book *head, long id)
 		temp = head;
 		head = head->next;
 
-		if (temp->l_book_id == id)
+		if (temp->book->l_book_id == id)
 		{
 			free_node(temp);
 
@@ -65,7 +74,7 @@ struct book *remove_by_id(struct book *head, long id)
 	return head;
 }
 
-void free_node(struct book *node)
+void free_book(struct book *node)
 {
 	free(node->ptr_name);
 	free(node->ptr_title);
@@ -81,20 +90,105 @@ struct book *new_book()
 	return new;
 }
 
-void append(struct book **head, struct book *to_append)
+struct book_node *append(struct book_node *head, struct book *new)
 {
-	struct book *tmp = *head;
+	struct book_node *tmp = head, *end = malloc(sizeof(struct book_node));
+	end->next = NULL;
+	end->book = new;
 
-	if (*head == NULL)
+	if (head == NULL)
 	{
-		*head = to_append;
+		return end;
 	}
-	else
+
+	while (tmp->next != NULL)
 	{
-		while (tmp->next != NULL)
+		tmp = tmp->next;
+	}
+
+	tmp->next = end;
+	return head;
+}
+
+struct book_node *corrupt_records(struct book_node *head)
+{
+	struct book_node *current = head, *corrupt = NULL;
+
+	while (current != NULL)
+	{
+		if (count_with_id(head, current->book->l_book_id))
 		{
-			tmp = tmp->next;
+			append(corrupt, current->book);
 		}
-		tmp->next = to_append;
+
+		current = current->next;
 	}
+
+	return head;
+}
+
+static int count_with_id(struct book_node *head, long id)
+{
+	int count = 0;
+	while (head != NULL)
+	{
+		if (head->book->l_book_id == id)
+		{
+			count += 1;
+		}
+		head = head->next;
+	}
+
+	return count;
+}
+
+void display_corrupt_records(struct book_node *head)
+{
+	struct book_node *corrupt = corrupt_records(head);
+	print_books(corrupt);
+}
+
+void print_books(struct book_node *head)
+{
+	struct book *b;
+	printf("\n===============================================================");
+	printf("======================================\n== ""Book id"" |""  Títle (20 chars )""| ""Author id"" ==========================================================");
+	printf("\n===============================================================");
+	printf("======================================");
+	printf("\n===============================================================");
+	printf("======================================\n");
+
+	while (head != NULL)
+	{
+		b = head->book;
+		printf("== %-ld |%-20s|%-ld\n", b->l_book_id, b->ptr_title, b->l_author_id);
+		head = head->next;
+	}
+	printf("\n=====================================================");
+	printf("================================================\n");
+}
+
+void print_book(struct book *b)
+{
+	printf("Detailed information for==(%ld)==\n", b->l_book_id);
+	printf("=%ld= %31s %ld\n", b->l_book_id, "Identifier:", b->l_book_id);
+	printf("=%ld= %31s %s\n", b->l_book_id, "Title of the book:", b->ptr_title);
+	printf("=%ld= %31s %i\n", b->l_book_id, "Publication year:", b->i_year);
+	printf("=%ld= %31s %i\n", b->l_book_id, "Number of pages:", b->i_numb_pages);
+	printf("=%ld= %31s %lf\n", b->l_book_id, "Quality:", b->f_quality);
+	printf("=%ld= %31s %ld\n", b->l_book_id, "Authors' ID:", b->l_author_id);
+	printf("=%ld= %31s %s\n", b->l_book_id, "Name of the author:", b->ptr_name);
+	printf("=%ld= %31s %s\n", b->l_book_id, "Surname of the authour:", b->ptr_surname);
+}
+
+size_t book_list_length(struct book_node *head)
+{
+	size_t length = 0;
+	while (head != NULL)
+	{
+		length += 1;
+		head = head->next;
+	}
+
+	return length;
 }

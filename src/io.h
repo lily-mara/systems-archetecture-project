@@ -3,8 +3,8 @@
 
 #include "book.h"
 
-int export_books(struct book *head, char *filename);
-struct book *import_books(char *filename);
+int export_books(struct book_node *head, char *filename);
+struct book_node *import_books(char *filename);
 long get_long();
 int get_int();
 float get_float();

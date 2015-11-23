@@ -36,10 +36,10 @@
 
 #define ERROR_INVALID_NUMBER "\tInvalid. Expected number, got '%s'. Please input number: "
 
-static struct book *load_books_from_fp(FILE *);
-static int save_books_to_fp(struct book *, FILE *);
+static struct book_node *load_books_from_fp(FILE *);
+static int save_books_to_fp(struct book_node *, FILE *);
 
-int export_books(struct book *head, char *filename)
+int export_books(struct book_node *head, char *filename)
 {
 	FILE *fp = fopen(filename, "w");
 	_early_return_null(fp);
@@ -50,9 +50,9 @@ int export_books(struct book *head, char *filename)
 	return status;
 }
 
-struct book *import_books(char *filename)
+struct book_node *import_books(char *filename)
 {
-	struct book *head;
+	struct book_node *head;
 	FILE *fp = fopen(filename, "r");
 	assert(fp != NULL);
 
@@ -62,61 +62,51 @@ struct book *import_books(char *filename)
 	return head;
 }
 
-size_t book_list_length(struct book *head)
-{
-	size_t length = 0;
-	while (head != NULL)
-	{
-		length += 1;
-		head = head->next;
-	}
-
-	return length;
-}
-
-int save_books_to_fp(struct book *head, FILE *fp)
+int save_books_to_fp(struct book_node *head, FILE *fp)
 {
 	size_t elements_written, title_chars, name_chars, surname_chars, length;
+	struct book *current;
 
 	length = book_list_length(head);
 	elements_written = fwrite(&length, sizeof(size_t), 1, fp);
 	_early_return_ne(elements_written, 1);
 
 	while (head != NULL) {
-		elements_written = fwrite(&(head->l_book_id), sizeof(long), 1, fp);
+		current = head->book;
+		elements_written = fwrite(&(current->l_book_id), sizeof(long), 1, fp);
 		_early_return_ne(elements_written, 1);
 
-		elements_written = fwrite(&(head->l_author_id), sizeof(long), 1, fp);
+		elements_written = fwrite(&(current->l_author_id), sizeof(long), 1, fp);
 		_early_return_ne(elements_written, 1);
 
-		elements_written = fwrite(&(head->i_year), sizeof(int), 1, fp);
+		elements_written = fwrite(&(current->i_year), sizeof(int), 1, fp);
 		_early_return_ne(elements_written, 1);
 
-		elements_written = fwrite(&(head->i_numb_pages), sizeof(int), 1, fp);
+		elements_written = fwrite(&(current->i_numb_pages), sizeof(int), 1, fp);
 		_early_return_ne(elements_written, 1);
 
-		elements_written = fwrite(&(head->f_quality), sizeof(float), 1, fp);
+		elements_written = fwrite(&(current->f_quality), sizeof(float), 1, fp);
 		_early_return_ne(elements_written, 1);
 
-		title_chars = strlen(head->ptr_title);
+		title_chars = strlen(current->ptr_title);
 		elements_written = fwrite(&title_chars, sizeof(size_t), 1, fp);
 		_early_return_ne(elements_written, 1);
 
-		name_chars = strlen(head->ptr_name);
+		name_chars = strlen(current->ptr_name);
 		elements_written = fwrite(&name_chars, sizeof(size_t), 1, fp);
 		_early_return_ne(elements_written, 1);
 
-		surname_chars = strlen(head->ptr_surname);
+		surname_chars = strlen(current->ptr_surname);
 		elements_written = fwrite(&surname_chars, sizeof(size_t), 1, fp);
 		_early_return_ne(elements_written, 1);
 
-		elements_written = fwrite(head->ptr_title, sizeof(char), title_chars, fp);
+		elements_written = fwrite(current->ptr_title, sizeof(char), title_chars, fp);
 		_early_return_ne(elements_written, title_chars);
 
-		elements_written = fwrite(head->ptr_name, sizeof(char), name_chars, fp);
+		elements_written = fwrite(current->ptr_name, sizeof(char), name_chars, fp);
 		_early_return_ne(elements_written, name_chars);
 
-		elements_written = fwrite(head->ptr_surname, sizeof(char), surname_chars, fp);
+		elements_written = fwrite(current->ptr_surname, sizeof(char), surname_chars, fp);
 		_early_return_ne(elements_written, surname_chars);
 
 		head = head->next;
@@ -134,8 +124,7 @@ struct book *load_book_from_fp(FILE *fp)
 		return NULL;
 	}
 
-	b = malloc(sizeof(struct book));
-	b->next = NULL;
+	b = new_book();
 
 	bytes_read = fread(&b->l_book_id, sizeof(long), 1, fp);
 	assert(bytes_read == 1);
@@ -181,9 +170,9 @@ struct book *load_book_from_fp(FILE *fp)
 	return b;
 }
 
-struct book *load_books_from_fp(FILE *fp)
+struct book_node *load_books_from_fp(FILE *fp)
 {
-	struct book *head, *current;
+	struct book_node *head, *current;
 	size_t elements, i;
 
 	if (feof(fp))
@@ -194,12 +183,12 @@ struct book *load_books_from_fp(FILE *fp)
 	i = fread(&elements, sizeof(size_t), 1, fp);
 	/*assert(i */
 
-	head = load_book_from_fp(fp);
+	head = append(NULL, load_book_from_fp(fp));
 	current = head;
 
 	for (i = 1; i < elements; i++)
 	{
-		current->next = load_book_from_fp(fp);
+		append(current, load_book_from_fp(fp));
 		current = current->next;
 	}
 
