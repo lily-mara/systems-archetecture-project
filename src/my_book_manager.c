@@ -17,6 +17,10 @@
 
 //===================================================================================================================================================================
 
+#ifndef DEFAULT_FILENAME
+#define DEFAULT_FILENAME "data_demo.sbm"
+#endif /* DEFAULT_FILENAME */
+
 struct prog_info
 {
 	struct book_node *first;
@@ -39,7 +43,6 @@ void change_author_name(struct book *ptr, struct book_node *);
 void change_author_surname(struct book *ptr, struct book_node *);
 void recursive_modification(struct book *ptr, struct book_node *);
 void remove_book(struct prog_info *info);
-struct book *next_ID_search(long ID, struct book *first);
 
 int main(void)
 {
@@ -59,7 +62,17 @@ void show_menu(struct prog_info *info)
 {
 	int opc;
 	struct book_node *new_list;
+#ifdef DEBUG
+	/*
+	 * If debugging is enabled, then we need this variable to hold onto the
+	 * filename that the user enters, otherwise, we're using the default
+	 * filename of DEFAULT_FILENAME, which can be overwritten at compile-time
+	 * with -DDEFAULT_FILENAME=other_name.dat
+	 */
 	char *filename;
+#else
+	char filename[] = DEFAULT_AUTOSAVE_FILENAME;
+#endif /* DEBUG */
 
 	do {
 		printf("==================================================");
@@ -107,21 +120,38 @@ void show_menu(struct prog_info *info)
 				remove_book(info);
 				break;
 			case 6:
-				printf("\tPlease Introduce filename: ");
+#ifdef DEBUG
+				printf("[DEBUG] Please Introduce filename: ");
 
 				filename = get_string();
 				export_books(info->first, filename);
-
 				free(filename);
+#else /* DEBUG */
+				export_books(info->first, filename);
+#endif /* DEBUG */
+
 				break;
 			case 7:
-				printf("\tPlease Introduce filename: ");
+#ifdef DEBUG
+				printf("[DEBUG] Please Introduce filename: ");
 
 				filename = get_string();
 				new_list = import_books(filename);
-
-				free_list(info->first);
+#else /* DEBUG */
+				new_list = import_books(filename);
+#endif /* DEBUG */
+				if (new_list == NULL)
+				{
+					printf("Could not load list from file '%s'. Keeping old list.\n", filename);
+				}
+				else
+				{
+					free(info->first);
+					info->first = new_list;
+				}
+#ifdef DEBUG
 				free(filename);
+#endif /* DEBUG */
 
 				info->first = new_list;
 				break;

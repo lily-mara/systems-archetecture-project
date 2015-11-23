@@ -31,8 +31,8 @@
  * The next functions deal with reading data of various types from stdin.
  */
 
-#define _early_return_ne(x,y) if(x != y){return -1;}
-#define _early_return_null(x) if(x == NULL){return -1;}
+#define _early_return_ne(x,y) if((x) != (y)){return -1;}
+#define _early_return_null(x) if((x) == NULL){return -1;}
 
 #define ERROR_INVALID_NUMBER "\tInvalid. Expected number, got '%s'. Please input number: "
 
@@ -54,7 +54,10 @@ struct book_node *import_books(char *filename)
 {
 	struct book_node *head;
 	FILE *fp = fopen(filename, "r");
-	assert(fp != NULL);
+	if (fp == NULL)
+	{
+		return NULL;
+	}
 
 	head = load_books_from_fp(fp);
 	fclose(fp);
@@ -166,6 +169,10 @@ struct book *load_book_from_fp(FILE *fp)
 
 	bytes_read = fread(b->ptr_surname, sizeof(char), surname_chars, fp);
 	assert(bytes_read == surname_chars);
+
+#ifndef DEBUG
+	(void)sizeof(bytes_read);
+#endif /* DEBUG */
 
 	return b;
 }

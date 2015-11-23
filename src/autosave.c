@@ -9,9 +9,24 @@
 
 static void *save_thread_entrypoint(void *);
 
+struct save_thread_args
+{
+	struct book_node *head;
+	char *filename;
+};
+
+
 void start_autosave(pthread_t *p, struct book_node *books)
 {
-	int status = pthread_create(p, NULL, save_thread_entrypoint, books);
+#ifdef DEBUG
+	printf("[DEBUG] Enter autosave filename: ");
+	char *filename = get_string();
+	struct save_thread_args args = {books, filename};
+#else /* DEBUG */
+	struct save_thread_args args = {books, DEFAULT_AUTOSAVE_FILENAME};
+#endif /* DEBUG */
+
+	int status = pthread_create(p, NULL, save_thread_entrypoint, (void *) &args);
 	if (status)
 	{
 		printf("\t\tCould not acquire thread. Autosave failed.\n");
@@ -21,7 +36,8 @@ void start_autosave(pthread_t *p, struct book_node *books)
 
 static void *save_thread_entrypoint(void *b)
 {
-	struct book_node *books = (struct book_node *)b;
+	struct save_thread_args *args = (struct save_thread_args *)b;
+	struct book_node *books = args->head;
 #ifdef DEBUG
 	int status;
 #endif /* DEBUG */
@@ -29,10 +45,10 @@ static void *save_thread_entrypoint(void *b)
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_cancel_state);
 #ifdef DEBUG
-	status = export_books(books, AUTOSAVE_PATH);
+	status = export_books(books, args->filename);
 	printf("[DEBUG] Autosaved. Export function returned: %d\n", status);
 #else /* DEBUG */
-	export_books(books, AUTOSAVE_PATH);
+	export_books(books, args->filename);
 #endif /* DEBUG */
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_cancel_state);
 
@@ -41,10 +57,10 @@ static void *save_thread_entrypoint(void *b)
 		sleep(AUTOSAVE_SECONDS);
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_cancel_state);
 #ifdef DEBUG
-		status = export_books(books, AUTOSAVE_PATH);
+		status = export_books(books, args->filename);
 		printf("[DEBUG] Autosaved. Export function returned: %d\n", status);
 #else /* DEBUG */
-		export_books(books, AUTOSAVE_PATH);
+		export_books(books, args->filename);
 #endif /* DEBUG */
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_cancel_state);
 	}
