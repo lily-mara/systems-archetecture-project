@@ -21,7 +21,6 @@ struct prog_info
 {
 	struct book_node *first;
 	int cmdCount;
-	int DynamicCount;
 	pthread_t *autosave_thread;
 };
 
@@ -48,7 +47,6 @@ int main(void)
 
 	info.first = NULL;
 	info.cmdCount = 0;
-	info.DynamicCount = 0;
 	info.autosave_thread = NULL;
 
 	show_menu(&info);
