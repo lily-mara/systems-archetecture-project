@@ -6,21 +6,24 @@
 //Date:4/11/15
 //==================================================
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
 
 #include "book.h"
 #include "io.h"
+#include "multiproc.h"
 
 //===================================================================================================================================================================
 
 struct prog_info
 {
-	struct  book *first;
-	struct  book *last;
+	struct book *first;
+	struct book *last;
 	int cmdCount;
 	int DynamicCount;
+	pthread_t *autosave_thread;
 };
 
 //Prototypes
@@ -49,6 +52,8 @@ int main(void)
 	info.first = NULL;
 	info.cmdCount = 0;
 	info.DynamicCount = 0;
+	info.autosave_thread = NULL;
+
 	show_menu(&info);
 
 	return 0;
@@ -67,7 +72,17 @@ void show_menu(struct prog_info *info)
 		printf("\n==================================================");
 		printf("\n[0]\tExit\n[1]\tInsert a book\n[2]\tShow all books\n[3]\tShow a book by ID\n");
 		printf("[4]\tmodify a book by ID\n[5]\tremove a book by ID\n[6]\tExport catalogue\n");
-		printf("[7]\tImport Catalogue\n[8]\tShow corrupt records\n[9]\tActivate autosave (every 10 seconds)");
+		printf("[7]\tImport Catalogue\n[8]\tShow corrupt records\n[9]\t");
+
+		if (info->autosave_thread == NULL)
+		{
+			printf("Activate autosave (every 10 seconds)");
+		}
+		else
+		{
+			printf("Deactivate autosave");
+		}
+
 		printf("\n\n   \t#INFO: %d commands executed.\n   \tType your option [0-9]:", info->cmdCount);
 
 		do {
@@ -118,8 +133,22 @@ void show_menu(struct prog_info *info)
 			case 8:
 				break;
 			case 9:
+				if (info->autosave_thread == NULL)
+				{
+					info->autosave_thread = malloc(sizeof(pthread_t));
+					start_autosave(info->autosave_thread, info->first);
+				}
+				else
+				{
+					stop_autosave(info->autosave_thread);
+					info->autosave_thread = NULL;
+				}
 				break;
 			case 0:
+				if (info->autosave_thread != NULL)
+				{
+					stop_autosave(info->autosave_thread);
+				}
 				free_list(info->first);
 				return;
 		}
@@ -132,7 +161,6 @@ void show_menu(struct prog_info *info)
 void insert(struct prog_info *info)
 {
 	struct book *ptr_new = new_book();
-	append(&info->first, ptr_new);
 
 	//Now we fill the fields of the book.
 	printf("\nIntroduce the following information:\n");
@@ -157,6 +185,7 @@ void insert(struct prog_info *info)
 	printf("\t\tthe surname of the author: ");
 	ptr_new->ptr_surname = get_string();
 
+	append(&info->first, ptr_new);
 	return;
 }
 
