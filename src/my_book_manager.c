@@ -20,7 +20,7 @@
 struct prog_info
 {
 	struct book_node *first;
-	int cmdCount;
+	int cmd_count;
 	pthread_t *autosave_thread;
 };
 
@@ -46,7 +46,7 @@ int main(void)
 	struct prog_info info;
 
 	info.first = NULL;
-	info.cmdCount = 0;
+	info.cmd_count = 0;
 	info.autosave_thread = NULL;
 
 	show_menu(&info);
@@ -78,7 +78,7 @@ void show_menu(struct prog_info *info)
 			printf("Deactivate autosave");
 		}
 
-		printf("\n\n   \t#INFO: %d commands executed.\n   \tType your option [0-9]:", info->cmdCount);
+		printf("\n\n   \t#INFO: %d commands executed.\n   \tType your option [0-9]:", info->cmd_count);
 
 		do {
 			opc=get_int();
@@ -148,7 +148,7 @@ void show_menu(struct prog_info *info)
 				return;
 		}
 
-		info->cmdCount++;
+		info->cmd_count++;
 	}while (opc!=0);
 
 }
