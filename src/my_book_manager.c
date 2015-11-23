@@ -78,7 +78,7 @@ void show_menu(struct prog_info *info)
 			printf("Deactivate autosave");
 		}
 
-		printf("\n\n   \t#INFO: %d commands executed.\n   \tType your option [0-9]:", info->cmd_count);
+		printf("\n\n   \t#INFO: %d commands executed.\n   \tType your option [0-9]: ", info->cmd_count);
 
 		do {
 			opc=get_int();
@@ -186,10 +186,18 @@ void insert(struct prog_info *info)
 
 void search_and_update(struct book_node *head)
 {
-	printf("\nPlease introduce the ID of the book you wish to modify:\n");
+	printf("\nPlease introduce the ID of the book you wish to modify: ");
 	long id = get_long();
 	struct book *ptr = find_by_id(head, id);
-	change(ptr, head);
+	if (ptr == NULL)
+	{
+		printf("There is no book with id: %ld", id);
+		search_and_update(head);
+	}
+	else
+	{
+		change(ptr, head);
+	}
 }
 
 void change(struct book *ptr, struct book_node *head)
@@ -257,6 +265,7 @@ void change_id(struct book *ptr, struct book_node *head)
 void change_title(struct book *ptr)
 {
 	printf("\nPlease introduce the new title of the book:");
+	free(ptr->ptr_title);
 	ptr->ptr_title = get_string();
 }
 
@@ -333,6 +342,8 @@ void change_author_name(struct book *ptr, struct book_node *head)
 		}
 		head = head->next;
 	}
+
+	free(new_name);
 }
 
 void change_author_surname(struct book *ptr, struct book_node *head)
@@ -350,6 +361,8 @@ void change_author_surname(struct book *ptr, struct book_node *head)
 		}
 		head = head->next;
 	}
+
+	free(new_name);
 }
 
 void recursive_modification(struct book *ptr, struct book_node *head)
@@ -380,7 +393,7 @@ void recursive_modification(struct book *ptr, struct book_node *head)
 
 void remove_book(struct prog_info *info)
 {
-	printf("\nPlease introduce the ID of the book you wish to remove:\n");
+	printf("\nPlease introduce the ID of the book you wish to remove: ");
 	long id = get_long();
 
 	info->first = remove_by_id(info->first, id);

@@ -55,19 +55,29 @@ void free_list_node(struct book_node *node)
 
 struct book_node *remove_by_id(struct book_node *head, long id)
 {
-	struct book_node *temp = head, *prev = head;
+	struct book_node *current = head, *temp = head, *prev = head;
 
-	while (head != NULL)
+	if (head->book->l_book_id == id)
+	{
+		temp = head->next;
+		prev = temp;
+		free_list_node(head);
+
+		head = temp;
+		current = temp;
+	}
+
+	while (current != NULL)
 	{
 		prev = temp;
 		temp = head;
-		head = head->next;
+		current = current->next;
 
 		if (temp->book->l_book_id == id)
 		{
 			free_list_node(temp);
 
-			prev->next = head;
+			prev->next = current;
 		}
 	}
 
