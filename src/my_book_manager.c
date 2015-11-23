@@ -76,7 +76,7 @@ void show_menu(struct prog_info *info)
 
 		if (info->autosave_thread == NULL)
 		{
-			printf("Activate autosave (every 10 seconds)");
+			printf("Activate autosave (every %d seconds)", AUTOSAVE_SECONDS);
 		}
 		else
 		{

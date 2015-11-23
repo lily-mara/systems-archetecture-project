@@ -6,8 +6,6 @@
 #include "io.h"
 #include "book.h"
 
-#define AUTOSAVE_PATH "autosave.dat"
-
 static void *save_thread_entrypoint(void *);
 
 void start_autosave(pthread_t *p, struct book *books)
@@ -39,7 +37,7 @@ static void *save_thread_entrypoint(void *b)
 
 	while(1)
 	{
-		sleep(5);
+		sleep(AUTOSAVE_SECONDS);
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_cancel_state);
 #ifdef DEBUG
 		status = export_books(books, AUTOSAVE_PATH);
