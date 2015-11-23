@@ -5,6 +5,7 @@
 
 #include "io.h"
 #include "book.h"
+#include "autosave.h"
 
 static void *save_thread_entrypoint(void *);
 
