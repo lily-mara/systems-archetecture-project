@@ -42,7 +42,7 @@ void change_author_id(struct book *ptr, struct book_node *);
 void change_author_name(struct book *ptr, struct book_node *);
 void change_author_surname(struct book *ptr, struct book_node *);
 void recursive_modification(struct book *ptr, struct book_node *);
-void remove_book(struct prog_info *info);
+void prompt_remove_book(struct prog_info *info);
 
 int main(void)
 {
@@ -91,7 +91,10 @@ void show_menu(struct prog_info *info)
 			printf("Deactivate autosave");
 		}
 
-		printf("\n\n   \t#INFO: %d commands executed.\n   \tType your option [0-9]: ", info->cmd_count);
+#ifndef DEBUG
+		printf("\n\n[DEBUG] %d commands run.", info->cmd_count);
+#endif /* DEBUG */
+		printf("\n   \tType your option [0-9]: ");
 
 		do {
 			opc=get_int();
@@ -117,7 +120,7 @@ void show_menu(struct prog_info *info)
 				search_and_update(info->first);
 				break;
 			case 5:
-				remove_book(info);
+				prompt_remove_book(info);
 				break;
 			case 6:
 #ifdef DEBUG
@@ -156,6 +159,7 @@ void show_menu(struct prog_info *info)
 				info->first = new_list;
 				break;
 			case 8:
+				display_corrupt_records(info->first);
 				break;
 			case 9:
 				if (info->autosave_thread == NULL)
@@ -284,7 +288,7 @@ void change_id(struct book *ptr, struct book_node *head)
 	long new_id = get_long();
 	struct book *check = find_by_id(head, new_id);
 
-	if (check != NULL)
+	if (check != NULL && check != ptr)
 	{
 		printf("The ID you have introduced matches the ID of %s\nPlease try again:\n", check->ptr_title);
 		change_id(ptr, head);
@@ -306,7 +310,7 @@ void change_year(struct book *ptr)
 		ptr->i_year = get_int();
 		if (ptr->i_year <= 0)
 		{
-			printf("\n Please introduce a valid year: ");
+			printf("\nPlease introduce a valid year: ");
 		}
 	} while (ptr->i_year <= 0);
 }
@@ -315,24 +319,24 @@ void change_pages(struct book *ptr)
 {
 	printf("\nPlease introduce the number of pages: ");
 	do {
-		ptr->i_year = get_int();
+		ptr->i_numb_pages = get_int();
 		if (ptr->i_year <= 0)
 		{
-			printf("\n Please introduce a valid number of pages: ");
+			printf("\nPlease introduce a valid number of pages: ");
 		}
-	}while (ptr->i_year <= 0);
+	}while (ptr->i_numb_pages <= 0);
 }
 
 void change_quality(struct book *ptr)
 {
 	printf("\nPlease introduce the Quality: ");
 	do {
-		ptr->i_year = get_float();
+		ptr->f_quality = get_float();
 		if (ptr->i_year <= 0)
 		{
-			printf("\n Please introduce a valid quality: ");
+			printf("\nPlease introduce a valid quality: ");
 		}
-	}while (ptr->i_year <= 0);
+	}while (ptr->f_quality <= 0);
 }
 
 void change_author_id(struct book *ptr, struct book_node *head)
@@ -421,10 +425,10 @@ void recursive_modification(struct book *ptr, struct book_node *head)
 	}
 }
 
-void remove_book(struct prog_info *info)
+void prompt_remove_book(struct prog_info *info)
 {
 	printf("\nPlease introduce the ID of the book you wish to remove: ");
 	long id = get_long();
 
-	info->first = remove_by_id(info->first, id);
+	info->first = remove_first_with_id(info->first, id);
 }

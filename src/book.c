@@ -53,7 +53,13 @@ void free_list_node(struct book_node *node)
 	free(node);
 }
 
-struct book_node *remove_by_id(struct book_node *head, long id)
+
+struct book_node *remove_first_with_id(struct book_node *head, long id)
+{
+	return remove_book(head, find_by_id(head, id));
+}
+
+struct book_node *remove_all_with_id(struct book_node *head, long id)
 {
 	struct book_node *current = head, *temp = head, *prev = head;
 
@@ -78,6 +84,36 @@ struct book_node *remove_by_id(struct book_node *head, long id)
 			free_list_node(temp);
 
 			prev->next = current;
+		}
+	}
+
+	return head;
+}
+
+struct book_node *remove_book(struct book_node *head, struct book *to_remove)
+{
+	struct book_node *current = head, *temp = head, *prev = head;
+
+	if (head->book == to_remove)
+	{
+		temp = head->next;
+		free_list_node(head);
+
+		return temp;
+	}
+
+	while (current != NULL)
+	{
+		prev = temp;
+		temp = head;
+		current = current->next;
+
+		if (temp->book == to_remove)
+		{
+			free_list_node(temp);
+
+			prev->next = current;
+			return head;
 		}
 	}
 
@@ -120,42 +156,63 @@ struct book_node *append(struct book_node *head, struct book *new)
 	return head;
 }
 
-struct book_node *corrupt_records(struct book_node *head)
-{
-	struct book_node *current = head, *corrupt = NULL;
-
-	while (current != NULL)
-	{
-		if (count_with_id(head, current->book->l_book_id))
-		{
-			append(corrupt, current->book);
-		}
-
-		current = current->next;
-	}
-
-	return head;
-}
-
-static int count_with_id(struct book_node *head, long id)
-{
-	int count = 0;
-	while (head != NULL)
-	{
-		if (head->book->l_book_id == id)
-		{
-			count += 1;
-		}
-		head = head->next;
-	}
-
-	return count;
-}
-
 void display_corrupt_records(struct book_node *head)
 {
-	struct book_node *corrupt = corrupt_records(head);
-	print_books(corrupt);
+	struct book_node *corrupt = duplicate_ids(head), *temp;
+	struct book *b;
+	if (corrupt != NULL)
+	{
+		printf("\nBooks with duplicate ids:\n");
+	}
+	while (corrupt != NULL)
+	{
+		b = corrupt->book;
+		printf("%ld => %s\n", b->l_book_id, b->ptr_title);
+		temp = corrupt;
+		corrupt = corrupt->next;
+
+		free(temp);
+	}
+
+	free_list(corrupt);
+	printf("\n");
+
+	corrupt_authors(head);
+}
+
+void corrupt_authors(struct book_node *head)
+{
+	struct book_node *j_tmp = head, *i_tmp = head;
+	char *name, *surname;
+	long i_id, j_id, i_auth_id, j_auth_id;
+
+	while (i_tmp != NULL)
+	{
+		name = i_tmp->book->ptr_name;
+		surname = i_tmp->book->ptr_surname;
+		i_auth_id = i_tmp->book->l_author_id;
+		i_id = i_tmp->book->l_book_id;
+
+		j_tmp = head;
+		while (j_tmp != NULL)
+		{
+			j_auth_id = j_tmp->book->l_author_id;
+			j_id = j_tmp->book->l_book_id;
+
+			if (i_auth_id == j_auth_id && strcmp(name, j_tmp->book->ptr_name) != 0)
+			{
+				printf("MISMATCH: %ld and %ld share author id %ld, but %ld has name '%s' and %ld has name '%s'.\n"
+						, i_id, j_id, i_auth_id, i_id, name, j_id, j_tmp->book->ptr_name);
+			}
+			if (i_auth_id == j_auth_id && strcmp(surname, j_tmp->book->ptr_surname) != 0)
+			{
+				printf("MISMATCH: %ld and %ld share author id %ld, but %ld has surname '%s' and %ld has name '%s'.\n"
+						, i_id, j_id, i_auth_id, i_id, surname, j_id, j_tmp->book->ptr_surname);
+			}
+			j_tmp = j_tmp->next;
+		}
+		i_tmp = i_tmp->next;
+	}
 }
 
 void print_books(struct book_node *head)
@@ -201,4 +258,90 @@ size_t book_list_length(struct book_node *head)
 	}
 
 	return length;
+}
+
+struct book_node *all_with_id(struct book_node *head, long id)
+{
+	struct book_node *new_list = NULL;
+
+	while (head != NULL)
+	{
+		if (head->book->l_book_id == id)
+		{
+			new_list = append(new_list, head->book);
+		}
+		head = head->next;
+	}
+
+	return new_list;
+}
+
+struct book_node *duplicate(struct book_node *head)
+{
+	struct book_node *new_head = NULL;
+
+	while (head != NULL)
+	{
+		new_head = append(new_head, head->book);
+		head = head->next;
+	}
+
+	return new_head;
+}
+
+struct book_node *duplicate_ids(struct book_node *head)
+{
+	struct book_node *dups = NULL, *tmp = head;
+
+	while (tmp != NULL)
+	{
+		if (count_with_id(head, tmp->book->l_book_id) > 1)
+		{
+			dups = append(dups, tmp->book);
+		}
+		tmp = tmp->next;
+	}
+
+	return dups;
+}
+
+static int count_with_id(struct book_node *head, long id)
+{
+	int count = 0;
+
+	while (head != NULL)
+	{
+		if (head->book->l_book_id == id)
+		{
+			count += 1;
+		}
+		head = head->next;
+	}
+
+	return count;
+}
+
+struct book_node *mismatched_authors(struct book_node *head)
+{
+	struct book_node *mismatched = NULL, *temp = NULL, *to_free;
+
+	while (head != NULL)
+	{
+		temp = all_with_id(head->next, head->book->l_book_id);
+		if (temp != NULL)
+		{
+			mismatched = append(mismatched, head->book);
+		}
+
+		while (temp != NULL)
+		{
+			mismatched = append(mismatched, temp->book);
+			to_free = temp;
+			temp = temp->next;
+			free(to_free);
+		}
+		head = head->next;
+	}
+
+	return mismatched;
 }
