@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if ! type "cmake" > /dev/null; then
+	gcc -DDEBUG -pthread -Wall -Werror src/*.c -o my_book_manager
+	exit 0
+fi
+
 mkdir -p build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Debug ..
