@@ -4,4 +4,4 @@ mkdir -p build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 make my_book_manager
-src/my_book_manager
+cp src/my_book_manager ..
