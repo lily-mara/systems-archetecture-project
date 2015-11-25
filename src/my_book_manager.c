@@ -91,7 +91,7 @@ void show_menu(struct prog_info *info)
 			printf("Deactivate autosave");
 		}
 
-#ifndef DEBUG
+#ifdef DEBUG
 		printf("\n\n[DEBUG] %d commands run.", info->cmd_count);
 #endif /* DEBUG */
 		printf("\n   \tType your option [0-9]: ");
