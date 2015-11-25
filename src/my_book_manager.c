@@ -146,7 +146,7 @@ void show_menu(struct prog_info *info)
 				}
 				else
 				{
-					free(info->first);
+					free_list(info->first);
 					info->first = new_list;
 				}
 #ifdef DEBUG
