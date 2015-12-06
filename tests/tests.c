@@ -43,3 +43,13 @@ void assert_book_neq(struct book *x, struct book *y) {
 		x->f_quality != y->f_quality
 	);
 }
+
+void assert_pairs_eq(struct book_pair *x, struct book_pair *y)
+{
+	while (x != NULL || y != NULL) {
+		assert_true((x->x == y->x || x->x == y->y) && (x->y == y->y || x->y == y->x));
+
+		x = x->next;
+		y = y->next;
+	}
+}

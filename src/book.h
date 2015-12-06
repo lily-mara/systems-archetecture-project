@@ -1,6 +1,8 @@
 #ifndef _BOOK_H_
 #define _BOOK_H_
 
+#include <stdlib.h>
+
 struct book {
 	long l_book_id;
 	char *ptr_title;
@@ -17,6 +19,14 @@ struct book_node
 	struct book *book;
 	struct book_node *next;
 };
+
+struct book_pair
+{
+	struct book *x;
+	struct book *y;
+	struct book_pair *next;
+};
+
 
 void free_list(struct book_node *);
 void free_list_node(struct book_node *);
@@ -35,6 +45,9 @@ struct book_node *remove_book(struct book_node *, struct book *);
 struct book_node *all_with_id(struct book_node *head, long id);
 struct book_node *duplicate_ids(struct book_node *head);
 struct book_node *duplicate(struct book_node *head);
-void corrupt_authors(struct book_node *head);
+struct book_pair *corrupt_authors(struct book_node *head);
+void print_corrupt_authors(struct book_node *head);
+void free_pairs(struct book_pair *head);
+struct book_pair *add_pair(struct book_pair *head, struct book *x, struct book *y);
 
 #endif /* _BOOK_H_ */

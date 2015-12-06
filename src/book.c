@@ -5,6 +5,7 @@
 #include "book.h"
 
 static int count_with_id(struct book_node *head, long id);
+static int author_error(struct book *x, struct book *y);
 
 struct book *find_by_id(struct book_node *head, long id)
 {
@@ -177,42 +178,105 @@ void display_corrupt_records(struct book_node *head)
 	free_list(corrupt);
 	printf("\n");
 
-	corrupt_authors(head);
+	print_corrupt_authors(head);
 }
 
-void corrupt_authors(struct book_node *head)
+struct book_pair *corrupt_authors(struct book_node *head)
 {
-	struct book_node *j_tmp = head, *i_tmp = head;
-	char *name, *surname;
-	long i_id, j_id, i_auth_id, j_auth_id;
+	struct book_pair *corrupt = NULL;
+	struct book_node *i = head, *j;
 
-	while (i_tmp != NULL)
+	while (i != NULL)
 	{
-		name = i_tmp->book->ptr_name;
-		surname = i_tmp->book->ptr_surname;
-		i_auth_id = i_tmp->book->l_author_id;
-		i_id = i_tmp->book->l_book_id;
-
-		j_tmp = head;
-		while (j_tmp != NULL)
+		j = head;
+		while (j != NULL)
 		{
-			j_auth_id = j_tmp->book->l_author_id;
-			j_id = j_tmp->book->l_book_id;
-
-			if (i_auth_id == j_auth_id && strcmp(name, j_tmp->book->ptr_name) != 0)
+			if (author_error(i->book, j->book))
 			{
-				printf("MISMATCH: %ld and %ld share author id %ld, but %ld has name '%s' and %ld has name '%s'.\n"
-						, i_id, j_id, i_auth_id, i_id, name, j_id, j_tmp->book->ptr_name);
+				corrupt = add_pair(corrupt, i->book, j->book);
 			}
-			if (i_auth_id == j_auth_id && strcmp(surname, j_tmp->book->ptr_surname) != 0)
-			{
-				printf("MISMATCH: %ld and %ld share author id %ld, but %ld has surname '%s' and %ld has name '%s'.\n"
-						, i_id, j_id, i_auth_id, i_id, surname, j_id, j_tmp->book->ptr_surname);
-			}
-			j_tmp = j_tmp->next;
+			j = j->next;
 		}
-		i_tmp = i_tmp->next;
+		i = i->next;
 	}
+
+	return corrupt;
+}
+
+void print_corrupt_authors(struct book_node *head)
+{
+	struct book_pair *tmp, *corrupt = corrupt_authors(head);
+
+	if (corrupt != NULL)
+	{
+		printf("CORRUPT AUTHORS:\n");
+	}
+
+	while (corrupt != NULL)
+	{
+		printf("Book %ld and %ld: \"%s %s\" != \"%s %s\"\n",
+				corrupt->x->l_book_id, corrupt->y->l_book_id,
+				corrupt->x->ptr_name, corrupt->x->ptr_surname,
+				corrupt->y->ptr_name, corrupt->y->ptr_surname);
+		tmp = corrupt;
+		corrupt = corrupt->next;
+		free(tmp);
+	}
+
+	printf("\n");
+}
+
+struct book_pair *add_pair(struct book_pair *head, struct book *x, struct book *y)
+{
+	struct book_pair *tmp = head, *prev = head;
+
+	if (head == NULL)
+	{
+		tmp = malloc(sizeof(struct book_pair));
+		tmp->x = x;
+		tmp->y = y;
+		tmp->next = NULL;
+
+		return tmp;
+	}
+
+	while (tmp != NULL)
+	{
+		if ((tmp->x == x && tmp->y == y) || (tmp->x == y && tmp->y == x))
+		{
+			return head;
+		}
+		prev = tmp;
+		tmp = tmp->next;
+	}
+
+	prev->next = malloc(sizeof(struct book_pair));
+	prev->next->x = x;
+	prev->next->y = y;
+	prev->next->next = NULL;
+
+	return head;
+}
+
+void free_pairs(struct book_pair *head)
+{
+	struct book_pair *tmp;
+
+	while (head != NULL)
+	{
+		tmp = head;
+		head = head->next;
+		free(tmp);
+	}
+}
+
+static int author_error(struct book *x, struct book *y)
+{
+		if (x->l_author_id == y->l_author_id && ((strcmp(x->ptr_name, y->ptr_name) != 0) || (strcmp(x->ptr_surname, y->ptr_surname) != 0)))
+		{
+			return 1;
+		}
+		return 0;
 }
 
 void print_books(struct book_node *head)
