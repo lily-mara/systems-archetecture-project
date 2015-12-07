@@ -73,7 +73,10 @@ void stop_autosave(pthread_t *p)
 	int x, *y;
 	y = &x;
 
-	pthread_cancel(*p);
-	pthread_join(*p, (void **) &y);
-	free(p);
+	if (p != NULL)
+	{
+		pthread_cancel(*p);
+		pthread_join(*p, (void **) &y);
+		free(p);
+	}
 }

@@ -211,62 +211,86 @@ struct book_node *load_books_from_fp(FILE *fp)
 	return head;
 }
 
-long get_long()
+int get_long(long *x)
 {
 	char *aux = get_string();
 	char *aux2;
-	long out = strtol(aux, &aux2, 10);
+	long out;
+
+	if (aux == NULL)
+	{
+		return GET_USR_ENTERED_CTRLD;
+	}
+
+	out = strtol(aux, &aux2, 10);
 
 	if (aux2 == aux) {
 		printf(ERROR_INVALID_NUMBER, aux);
 		free(aux);
-		return get_int();
+		return get_long(x);
 	}
 	else
 	{
 		free(aux);
 	}
 
-	return out;
+	*x = out;
+	return GET_SUCCESS;
 }
 
-int get_int()
+int get_int(int *x)
 {
 	char *aux = get_string();
+	int out;
 	char *aux2;
-	int out = strtol(aux, &aux2, 10);
+
+	if (aux == NULL)
+	{
+		return GET_USR_ENTERED_CTRLD;
+	}
+
+	out = strtol(aux, &aux2, 10);
 
 
 	if (aux2 == aux) {
 		printf(ERROR_INVALID_NUMBER, aux);
 		free(aux);
-		return get_int();
+		return get_int(x);
 	}
 	else
 	{
 		free(aux);
 	}
 
-	return out;
+	*x = out;
+	return GET_SUCCESS;
 }
 
-float get_float()
+int get_float(float *x)
 {
 	char *aux = get_string();
 	char *aux2;
-	float out = strtof(aux, &aux2);
+	float out;
+
+	if (aux == NULL)
+	{
+		return GET_USR_ENTERED_CTRLD;
+	}
+
+	out = strtof(aux, &aux2);
 
 	if (aux2 == aux) {
 		printf(ERROR_INVALID_NUMBER, aux);
 		free(aux);
-		return get_int();
+		return get_float(x);
 	}
 	else
 	{
 		free(aux);
 	}
 
-	return out;
+	*x = out;
+	return GET_SUCCESS;
 }
 
 char *get_string()
@@ -277,8 +301,8 @@ char *get_string()
 
 	if ((int)size == -1)
 	{
-		// TODO: return to menu if the user enters CTRL-D
 		printf("\n");
+		return NULL;
 	}
 	else
 	{

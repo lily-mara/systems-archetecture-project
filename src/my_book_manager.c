@@ -43,6 +43,7 @@ void change_author_name(struct book *ptr, struct book_node *);
 void change_author_surname(struct book *ptr, struct book_node *);
 void recursive_modification(struct book *ptr, struct book_node *);
 void prompt_remove_book(struct prog_info *info);
+static void cleanup_new_book(struct book *x);
 
 int main(void)
 {
@@ -60,7 +61,7 @@ int main(void)
 
 void show_menu(struct prog_info *info)
 {
-	int opc;
+	int opc, get_status;
 	struct book_node *new_list;
 #ifdef DEBUG
 	/*
@@ -97,7 +98,14 @@ void show_menu(struct prog_info *info)
 		printf("\n   \tType your option [0-9]: ");
 
 		do {
-			opc=get_int();
+			get_status = get_int(&opc);
+			if (get_status == GET_USR_ENTERED_CTRLD)
+			{
+				free_list(info->first);
+				stop_autosave(info->autosave_thread);
+				exit(0);
+			}
+
 			if (opc <0 || opc >9)
 			{
 				printf("Please only introduce values from 0 to 9");
@@ -113,7 +121,16 @@ void show_menu(struct prog_info *info)
 				break;
 			case 3:
 				printf("\nPlease Introduce the Id of the book:");
-				long id = get_long();
+				long id;
+				get_status = get_long(&id);
+
+				if (get_status == GET_USR_ENTERED_CTRLD)
+				{
+					free_list(info->first);
+					stop_autosave(info->autosave_thread);
+					exit(0);
+				}
+
 				print_book(find_by_id(info->first, id));
 				break;
 			case 4:
@@ -127,6 +144,14 @@ void show_menu(struct prog_info *info)
 				printf("[DEBUG] Please Introduce filename: ");
 
 				filename = get_string();
+
+				if (filename == NULL)
+				{
+					free_list(info->first);
+					stop_autosave(info->autosave_thread);
+					exit(0);
+				}
+
 				export_books(info->first, filename);
 				free(filename);
 #else /* DEBUG */
@@ -139,6 +164,12 @@ void show_menu(struct prog_info *info)
 				printf("[DEBUG] Please Introduce filename: ");
 
 				filename = get_string();
+				if (filename == NULL)
+				{
+					free_list(info->first);
+					stop_autosave(info->autosave_thread);
+					exit(0);
+				}
 				new_list = import_books(filename);
 #else /* DEBUG */
 				new_list = import_books(filename);
@@ -183,45 +214,94 @@ void show_menu(struct prog_info *info)
 		}
 
 		info->cmd_count++;
-	}while (opc!=0);
+	} while (opc != 0);
 
 }
 
 void insert(struct prog_info *info)
 {
-	struct book *ptr_new = new_book();
+	struct book *new = new_book();
+	int status;
 
 	//Now we fill the fields of the book.
 	printf("\nIntroduce the following information:\n");
 	printf("\t\tthe Id of the book: ");
-	ptr_new->l_book_id = get_long();
+	status = get_long(&new->l_book_id);
+	if (status == GET_USR_ENTERED_CTRLD)
+	{
+		cleanup_new_book(new);
+		return;
+	}
 
 	printf("\t\tthe title of the book: ");
-	ptr_new->ptr_title = get_string();
+	new->ptr_title = get_string();
+	if (new->ptr_title == NULL)
+	{
+		cleanup_new_book(new);
+		return;
+	}
 
 	printf("\t\tthe publication year: ");
-	ptr_new->i_year = get_int();
+	status = get_int(&new->i_year);
+	if (status == GET_USR_ENTERED_CTRLD)
+	{
+		cleanup_new_book(new);
+		return;
+	}
 
 	printf("\t\tthe quality of the book: ");
-	ptr_new->f_quality = get_float();
+	status = get_float(&new->f_quality);
+	if (status == GET_USR_ENTERED_CTRLD)
+	{
+		cleanup_new_book(new);
+		return;
+	}
 
 	printf("\t\tthe Id of the author: ");
-	ptr_new->l_author_id = get_long();
+	status = get_long(&new->l_author_id);
+	if (status == GET_USR_ENTERED_CTRLD)
+	{
+		cleanup_new_book(new);
+		return;
+	}
 
 	printf("\t\tthe name of the author: ");
-	ptr_new->ptr_name = get_string();
+	new->ptr_name = get_string();
+	if (new->ptr_name == NULL)
+	{
+		cleanup_new_book(new);
+		return;
+	}
 
 	printf("\t\tthe surname of the author: ");
-	ptr_new->ptr_surname = get_string();
+	new->ptr_surname = get_string();
+	if (new->ptr_surname == NULL)
+	{
+		cleanup_new_book(new);
+		return;
+	}
 
-	info->first = append(info->first, ptr_new);
+	info->first = append(info->first, new);
 	return;
+}
+
+static void cleanup_new_book(struct book *x)
+{
+	printf("Got CTRL-D, returning to menu...\n");
+	free_book(x);
 }
 
 void search_and_update(struct book_node *head)
 {
 	printf("\nPlease introduce the ID of the book you wish to modify: ");
-	long id = get_long();
+	long id;
+	int status = get_long(&id);
+
+	if (status == GET_USR_ENTERED_CTRLD)
+	{
+		return;
+	}
+
 	struct book *ptr = find_by_id(head, id);
 	if (ptr == NULL)
 	{
@@ -245,10 +325,14 @@ void change(struct book *ptr, struct book_node *head)
 	printf("\t[6]Author ID\n");
 	printf("\t[7]Author Name\n");
 	printf("\t[8]Author Surname\n");
-	int opc;
+	int opc, status;
 	do {
 
-		opc=get_int();
+		status = get_int(&opc);
+		if (status == GET_USR_ENTERED_CTRLD)
+		{
+			return;
+		}
 		if (opc<1||opc>8)
 		{
 			printf("Please only introduce values between 1 and 8:");
@@ -285,7 +369,15 @@ void change(struct book *ptr, struct book_node *head)
 void change_id(struct book *ptr, struct book_node *head)
 {
 	printf("\nPlease introduce the new ID of the book:\n");
-	long new_id = get_long();
+	long new_id, status;
+
+	status = get_long(&new_id);
+
+	if (status == GET_USR_ENTERED_CTRLD)
+	{
+		return;
+	}
+
 	struct book *check = find_by_id(head, new_id);
 
 	if (check != NULL && check != ptr)
@@ -298,51 +390,85 @@ void change_id(struct book *ptr, struct book_node *head)
 
 void change_title(struct book *ptr)
 {
+	char *tmp;
 	printf("\nPlease introduce the new title of the book:");
+	tmp = get_string();
+
+	if (tmp == NULL)
+	{
+		return;
+	}
+
 	free(ptr->ptr_title);
-	ptr->ptr_title = get_string();
+	ptr->ptr_title = tmp;
 }
 
 void change_year(struct book *ptr)
 {
+	int status, year;
 	printf("\nPlease introduce the year of publication: ");
 	do {
-		ptr->i_year = get_int();
-		if (ptr->i_year <= 0)
+		status = get_int(&year);
+		if (status == GET_USR_ENTERED_CTRLD)
+		{
+			return;
+		}
+		if (year <= 0)
 		{
 			printf("\nPlease introduce a valid year: ");
 		}
-	} while (ptr->i_year <= 0);
+	} while (year <= -1);
+	ptr->i_year = year;
 }
 
 void change_pages(struct book *ptr)
 {
+	int status, pages;
 	printf("\nPlease introduce the number of pages: ");
 	do {
-		ptr->i_numb_pages = get_int();
-		if (ptr->i_year <= 0)
+		status = get_int(&pages);
+		if (status == GET_USR_ENTERED_CTRLD)
+		{
+			return;
+		}
+		if (pages <= 0)
 		{
 			printf("\nPlease introduce a valid number of pages: ");
 		}
-	}while (ptr->i_numb_pages <= 0);
+	} while (pages <= 0);
+	ptr->i_numb_pages = pages;
 }
 
 void change_quality(struct book *ptr)
 {
+	int status;
+	float quality;
 	printf("\nPlease introduce the Quality: ");
 	do {
-		ptr->f_quality = get_float();
-		if (ptr->i_year <= 0)
+		status = get_float(&quality);
+		if (status == GET_USR_ENTERED_CTRLD)
+		{
+			return;
+		}
+		if (quality <= 0)
 		{
 			printf("\nPlease introduce a valid quality: ");
 		}
-	}while (ptr->f_quality <= 0);
+	} while (quality <= 0);
+	ptr->f_quality = quality;
 }
 
 void change_author_id(struct book *ptr, struct book_node *head)
 {
 	printf("\nPlease introduce the new ID of the Author: \n");
-	long new_id = get_long();
+	long new_id;
+	int status = get_long(&new_id);
+
+	if (status == GET_USR_ENTERED_CTRLD)
+	{
+		return;
+	}
+
 	struct book *check = find_by_author_id(head, new_id);
 	if (check != NULL)
 	{
@@ -365,6 +491,12 @@ void change_author_name(struct book *ptr, struct book_node *head)
 {
 	printf("\nPlease introduce the new name of the author: ");
 	char *new_name = get_string();
+
+	if (new_name == NULL)
+	{
+		return;
+	}
+
 	long id = ptr->l_author_id;
 	while (head != NULL)
 	{
@@ -384,6 +516,12 @@ void change_author_surname(struct book *ptr, struct book_node *head)
 {
 	printf("\nPlease introduce the new surname of the author: ");
 	char *new_name = get_string();
+
+	if (new_name == NULL)
+	{
+		return;
+	}
+
 	long id = ptr->l_author_id;
 	while (head != NULL)
 	{
@@ -402,10 +540,14 @@ void change_author_surname(struct book *ptr, struct book_node *head)
 void recursive_modification(struct book *ptr, struct book_node *head)
 {
 	printf("\nPress 1 to modify another field of the book.\nPress 2 to choose another book to modify.\nPress 3 to return to main menu: ");
-	int opc;
+	int opc, status;
 	do {
 
-		opc = get_int();
+		status = get_int(&opc);
+		if (status == GET_USR_ENTERED_CTRLD)
+		{
+			return;
+		}
 		if (opc < 1 || opc > 3)
 		{
 			printf("Please only introduce values 1, 2, or 3:");
@@ -428,7 +570,13 @@ void recursive_modification(struct book *ptr, struct book_node *head)
 void prompt_remove_book(struct prog_info *info)
 {
 	printf("\nPlease introduce the ID of the book you wish to remove: ");
-	long id = get_long();
+	long id;
+	int status = get_long(&id);
+
+	if (status == GET_USR_ENTERED_CTRLD)
+	{
+		return;
+	}
 
 	info->first = remove_first_with_id(info->first, id);
 }
