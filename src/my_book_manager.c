@@ -1,11 +1,33 @@
-//MainFunction my_book_manager project
-//Developer:
-//Dev_Tester:
-//Integrator:
-//Int_Tester:
-//Date:4/11/15
-//==================================================
+/**CFile***********************************************************************
 
+  FileName    my_book_manager.c
+
+  Synopsis    main file for book manager project. This contains most of the
+              user interaction logic for the project. If a user is prompted
+			  for something, it's probably in this file.
+
+  SeeAlso     my_book_manager.h
+
+  Copyright   [Copyright (c) 2015 Carlos III University of Madrid
+  All rights reserved.
+
+  Permission is hereby granted, without written agreement and without license
+  or royalty fees, to use, copy, modify, and distribute this software and its
+  documentation for any purpose, provided that the above copyright notice and
+  the following two paragraphs appear in all copies of this software.
+
+  IN NO EVENT SHALL THE CARLOS III UNIVERSITY OF MADRID BE LIABLE TO ANY PARTY
+  FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING
+  OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE CARLOS III
+  UNIVERSITY OF MADRID HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+  THE CARLOS III UNIVERSITY OF MADRID SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+  FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS ON AN
+  "AS IS" BASIS, AND CARLOS III UNIVERSITY OF MADRID HAS NO OBLIGATION TO
+  PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.]
+
+******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,39 +36,31 @@
 #include "book.h"
 #include "io.h"
 #include "autosave.h"
+#include "my_book_manager.h"
 
-//===================================================================================================================================================================
-
+/*---------------------------------------------------------------------------*/
+/* Constant declarations                                                     */
+/*---------------------------------------------------------------------------*/
 #ifndef DEFAULT_FILENAME
 #define DEFAULT_FILENAME "data_demo.sbm"
 #endif /* DEFAULT_FILENAME */
 
-struct prog_info
-{
-	struct book_node *first;
-	int cmd_count;
-	pthread_t *autosave_thread;
-	pthread_mutex_t book_mutex;
-	struct save_thread_args autosave_args;
-};
-
-//Prototypes
-void show_menu(struct prog_info *info);
-void insert(struct prog_info *info);
-void search_and_update(struct book_node *);
-void change(struct book *ptr, struct book_node *);
-void change_id(struct book *ptr, struct book_node *head);
-void change_title(struct book *ptr);
-void change_year(struct book *ptr);
-void change_pages(struct book *ptr);
-void change_quality(struct book *ptr);
-void change_author_id(struct book *ptr, struct book_node *);
-void change_author_name(struct book *ptr, struct book_node *);
-void change_author_surname(struct book *ptr, struct book_node *);
-void recursive_modification(struct book *ptr, struct book_node *);
-void prompt_remove_book(struct prog_info *info);
+/*---------------------------------------------------------------------------*/
+/* Static function prototypes                                                */
+/*---------------------------------------------------------------------------*/
 static void cleanup_new_book(struct book *x);
 
+/*---------------------------------------------------------------------------*/
+/* Definition of functions                                                   */
+/*---------------------------------------------------------------------------*/
+/**Function********************************************************************
+
+  Synopsis           Main function. Initializes the program info struct and
+                     calls the show_menu function with it.
+
+  SideEffects        everything that this program does
+
+******************************************************************************/
 int main(void)
 {
 	struct prog_info info;
@@ -72,7 +86,16 @@ int main(void)
 	return 0;
 }
 
+/**Function********************************************************************
 
+  Synopsis           Menu loop. Continues to prompt the user for input and
+                     dispatches to the correct function until the user enters
+                     0, or hits CTRL-D.
+
+  SideEffects        Can modify, delete, add or otherwise change in any way
+                     virtually all data used in this program
+
+******************************************************************************/
 void show_menu(struct prog_info *info)
 {
 	int opc, get_status;
@@ -245,6 +268,16 @@ void show_menu(struct prog_info *info)
 
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user for information for a new book to be
+                     inserted, then inserts it. If at any time the user enters
+					 CTRL-D, this function will return to the show_menu
+					 function.
+
+  SideEffects        Allocates a new book on the list.
+
+******************************************************************************/
 void insert(struct prog_info *info)
 {
 	struct book *new = new_book();
@@ -312,12 +345,18 @@ void insert(struct prog_info *info)
 	return;
 }
 
-static void cleanup_new_book(struct book *x)
-{
-	printf("Got CTRL-D, returning to menu...\n");
-	free_book(x);
-}
+/**Function********************************************************************
 
+  Synopsis           Searches in the list of books for one with the id given by
+                     the user, then allows the user to change any properties of
+                     that book. If at any time the user enters CTRL-D, this
+                     function will return to the show_menu function. Will
+                     continue to prompt the user for ids if the user does not
+                     type in a valid book id.
+
+  SideEffects        Changes information in book list
+
+******************************************************************************/
 void search_and_update(struct book_node *head)
 {
 	printf("\nPlease introduce the ID of the book you wish to modify: ");
@@ -341,6 +380,15 @@ void search_and_update(struct book_node *head)
 	}
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user to change information on the given book.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Changes information in book list
+
+******************************************************************************/
 void change(struct book *ptr, struct book_node *head)
 {
 	printf("\nWhich field do you want to modify?\n");
@@ -393,6 +441,18 @@ void change(struct book *ptr, struct book_node *head)
 	}
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user to change id of given book. Searches
+                     through the book list to ensure that there is no book
+                     with the given id. If there is already a book with the
+                     given id, re-prompt the user.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Changes id of given book
+
+******************************************************************************/
 void change_id(struct book *ptr, struct book_node *head)
 {
 	printf("\nPlease introduce the new ID of the book:\n");
@@ -415,6 +475,15 @@ void change_id(struct book *ptr, struct book_node *head)
 	ptr->l_book_id = new_id;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user to change title of given book.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Changes title of given book
+
+******************************************************************************/
 void change_title(struct book *ptr)
 {
 	char *tmp;
@@ -430,24 +499,38 @@ void change_title(struct book *ptr)
 	ptr->ptr_title = tmp;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user to change year of given book.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Changes year of given book
+
+******************************************************************************/
 void change_year(struct book *ptr)
 {
 	int status, year;
 	printf("\nPlease introduce the year of publication: ");
-	do {
-		status = get_int(&year);
-		if (status == GET_USR_ENTERED_CTRLD)
-		{
-			return;
-		}
-		if (year <= 0)
-		{
-			printf("\nPlease introduce a valid year: ");
-		}
-	} while (year <= -1);
+	status = get_int(&year);
+	if (status == GET_USR_ENTERED_CTRLD)
+	{
+		return;
+	}
 	ptr->i_year = year;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user to change number of pages of given book.
+                     If user enters a number < 0, re-prompt until they enter
+                     valid number.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Changes pages of given book
+
+******************************************************************************/
 void change_pages(struct book *ptr)
 {
 	int status, pages;
@@ -466,6 +549,17 @@ void change_pages(struct book *ptr)
 	ptr->i_numb_pages = pages;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user to change quality of given book.
+                     If user enters a number < 0, re-prompt until they enter
+                     valid number.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Changes pages of given book
+
+******************************************************************************/
 void change_quality(struct book *ptr)
 {
 	int status;
@@ -485,6 +579,21 @@ void change_quality(struct book *ptr)
 	ptr->f_quality = quality;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user to change quality of given book.
+                     If user enters a number < 0, re-prompt until they enter
+                     valid number. Also traverses list of books to ensure that
+                     if another book shared id with the given book, the other
+                     books have their ids updated.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Changes author_id of given book and any books with the
+                     same original id as the given book.
+
+
+******************************************************************************/
 void change_author_id(struct book *ptr, struct book_node *head)
 {
 	printf("\nPlease introduce the new ID of the Author: \n");
@@ -496,12 +605,6 @@ void change_author_id(struct book *ptr, struct book_node *head)
 		return;
 	}
 
-	struct book *check = find_by_author_id(head, new_id);
-	if (check != NULL)
-	{
-		printf("The ID you have introduced matches the ID of %s\nPlease try again: \n", check->ptr_name);
-		change_author_id(ptr, head);
-	}
 	//We have to change the ID of the author in all the books of the library wrote by that author
 	long original_id = ptr->l_author_id;
 	while (head != NULL)
@@ -514,6 +617,15 @@ void change_author_id(struct book *ptr, struct book_node *head)
 	}
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user to change name of given author.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Changes ptr_name of given book
+
+******************************************************************************/
 void change_author_name(struct book *ptr, struct book_node *head)
 {
 	printf("\nPlease introduce the new name of the author: ");
@@ -539,6 +651,15 @@ void change_author_name(struct book *ptr, struct book_node *head)
 	free(new_name);
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prompts the user to change surname of given author.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Changes ptr_surname of given book
+
+******************************************************************************/
 void change_author_surname(struct book *ptr, struct book_node *head)
 {
 	printf("\nPlease introduce the new surname of the author: ");
@@ -564,36 +685,17 @@ void change_author_surname(struct book *ptr, struct book_node *head)
 	free(new_name);
 }
 
-void recursive_modification(struct book *ptr, struct book_node *head)
-{
-	printf("\nPress 1 to modify another field of the book.\nPress 2 to choose another book to modify.\nPress 3 to return to main menu: ");
-	int opc, status;
-	do {
+/**Function********************************************************************
 
-		status = get_int(&opc);
-		if (status == GET_USR_ENTERED_CTRLD)
-		{
-			return;
-		}
-		if (opc < 1 || opc > 3)
-		{
-			printf("Please only introduce values 1, 2, or 3:");
-		}
-	} while (opc < 1 || opc > 3);
+  Synopsis           Prompts the user for a book id and removes the first book
+                     with the given id, or no book if there is no book with
+                     that id.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
 
-	switch(opc) {
-		case 1:
-			change(ptr, head);
-			recursive_modification(ptr, head);
-			break;
-		case 2:
-			search_and_update(head);
-			break;
-		case 3:
-			break;
-	}
-}
+  SideEffects        May delete a book
 
+******************************************************************************/
 void prompt_remove_book(struct prog_info *info)
 {
 	printf("\nPlease introduce the ID of the book you wish to remove: ");
@@ -606,4 +708,24 @@ void prompt_remove_book(struct prog_info *info)
 	}
 
 	info->first = remove_first_with_id(info->first, id);
+}
+
+/*---------------------------------------------------------------------------*/
+/* Definition of static functions                                            */
+/*---------------------------------------------------------------------------*/
+/**Function********************************************************************
+
+  Synopsis           Frees the given book and prints a message about the user
+                     pressing CTRL-D. Should only be called after user presses
+                     CTRL-D and you need to free the book that they passed in.
+                     If at any time the user enters CTRL-D, this function will
+                     return to the show_menu function.
+
+  SideEffects        Frees a book
+
+******************************************************************************/
+static void cleanup_new_book(struct book *x)
+{
+	printf("Got CTRL-D, returning to menu...\n");
+	free_book(x);
 }
