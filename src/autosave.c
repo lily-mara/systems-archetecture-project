@@ -66,6 +66,11 @@ void start_autosave(pthread_t *p, struct save_thread_args *args)
 #ifdef DEBUG
 	printf("[DEBUG] Enter autosave filename: ");
 	args->filename = get_string();
+	if (args->filename == NULL)
+	{
+		printf("[DEBUG] Got CTRL-D, returning to menu.\n");
+		return;
+	}
 #else /* DEBUG */
 	strcpy(args->filename, DEFAULT_AUTOSAVE_FILENAME);
 #endif /* DEBUG */
