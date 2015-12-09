@@ -63,27 +63,6 @@ struct book *find_by_id(struct book_node *head, long id)
 
 /**Function********************************************************************
 
-  Synopsis           Returns a pointer to the first book in the list of books
-                     with the given author id or NULL if there is no book with
-                     the given author
-
-******************************************************************************/
-struct book *find_by_author_id(struct book_node *head, long id)
-{
-	while (head != NULL)
-	{
-		if (head->book->l_author_id == id)
-		{
-			return head->book;
-		}
-		head = head->next;
-	}
-
-	return NULL;
-}
-
-/**Function********************************************************************
-
   Synopsis           Frees all of the books nodes within the given list
 
   SideEffects        Frees all of the books nodes within the given list

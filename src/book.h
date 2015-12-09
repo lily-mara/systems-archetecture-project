@@ -81,7 +81,6 @@ void free_list_node(struct book_node *);
 void free_book(struct book *);
 struct book_node *remove_first_with_id(struct book_node *, long);
 struct book *find_by_id(struct book_node *head_node, long id);
-struct book *find_by_author_id(struct book_node *first, long id);
 struct book *new_book();
 struct book_node *append(struct book_node *, struct book *);
 void display_corrupt_records(struct book_node *);
