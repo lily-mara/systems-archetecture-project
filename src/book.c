@@ -1,12 +1,52 @@
+/**CFile***********************************************************************
+
+  FileName    book.c
+
+  Synopsis    This file contains the book logic for the book manager program.
+
+  SeeAlso     book.h
+
+  Copyright   [Copyright (c) 2015 Carlos III University of Madrid
+  All rights reserved.
+
+  Permission is hereby granted, without written agreement and without license
+  or royalty fees, to use, copy, modify, and distribute this software and its
+  documentation for any purpose, provided that the above copyright notice and
+  the following two paragraphs appear in all copies of this software.
+
+  IN NO EVENT SHALL THE CARLOS III UNIVERSITY OF MADRID BE LIABLE TO ANY PARTY
+  FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING
+  OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE CARLOS III
+  UNIVERSITY OF MADRID HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+  THE CARLOS III UNIVERSITY OF MADRID SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+  FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS ON AN
+  "AS IS" BASIS, AND CARLOS III UNIVERSITY OF MADRID HAS NO OBLIGATION TO
+  PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.]
+
+******************************************************************************/
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
 #include "book.h"
 
+/*---------------------------------------------------------------------------*/
+/* Static function prototypes                                                */
+/*---------------------------------------------------------------------------*/
 static int count_with_id(struct book_node *head, long id);
 static int author_error(struct book *x, struct book *y);
 
+/*---------------------------------------------------------------------------*/
+/* Definition of functions                                                   */
+/*---------------------------------------------------------------------------*/
+/**Function********************************************************************
+
+  Synopsis           Returns a pointer to the book in the list of books with
+                     the given id or NULL if there is no book with the given id
+
+******************************************************************************/
 struct book *find_by_id(struct book_node *head, long id)
 {
 	while (head != NULL)
@@ -21,6 +61,13 @@ struct book *find_by_id(struct book_node *head, long id)
 	return NULL;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Returns a pointer to the first book in the list of books
+                     with the given author id or NULL if there is no book with
+                     the given author
+
+******************************************************************************/
 struct book *find_by_author_id(struct book_node *head, long id)
 {
 	while (head != NULL)
@@ -35,6 +82,13 @@ struct book *find_by_author_id(struct book_node *head, long id)
 	return NULL;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Frees all of the books nodes within the given list
+
+  SideEffects        Frees all of the books nodes within the given list
+
+******************************************************************************/
 void free_list(struct book_node *head)
 {
 	struct book_node *temp;
@@ -48,6 +102,13 @@ void free_list(struct book_node *head)
 	}
 }
 
+/**Function********************************************************************
+
+  Synopsis           Frees the given list node and the associated book
+
+  SideEffects        Frees the given list node and the associated book
+
+******************************************************************************/
 void free_list_node(struct book_node *node)
 {
 	if (node != NULL)
@@ -57,42 +118,33 @@ void free_list_node(struct book_node *node)
 	}
 }
 
+/**Function********************************************************************
+
+  Synopsis           Removes the first book in the list with the given id, or
+                     does nothing if there is no book with the given id.
+
+  SideEffects        May remove a book from the list
+
+******************************************************************************/
 struct book_node *remove_first_with_id(struct book_node *head, long id)
 {
-	return remove_book(head, find_by_id(head, id));
+	struct book *to_remove = find_by_id(head, id);
+	if (to_remove != NULL)
+	{
+		return remove_book(head, to_remove);
+	}
+	return NULL;
 }
 
-struct book_node *remove_all_with_id(struct book_node *head, long id)
-{
-	struct book_node *current = head, *temp = head, *prev = head;
+/**Function********************************************************************
 
-	if (head->book->l_book_id == id)
-	{
-		temp = head->next;
-		prev = temp;
-		free_list_node(head);
+  Synopsis           Removes the given book from the list of books, or
+                     does nothing if the given book is not contained in this
+                     list.
 
-		head = temp;
-		current = temp;
-	}
+  SideEffects        May remove one book from the list
 
-	while (current != NULL)
-	{
-		prev = temp;
-		temp = head;
-		current = current->next;
-
-		if (temp->book->l_book_id == id)
-		{
-			free_list_node(temp);
-
-			prev->next = current;
-		}
-	}
-
-	return head;
-}
-
+******************************************************************************/
 struct book_node *remove_book(struct book_node *head, struct book *to_remove)
 {
 	struct book_node *current = head, *temp = head, *prev = head;
@@ -123,6 +175,14 @@ struct book_node *remove_book(struct book_node *head, struct book *to_remove)
 	return head;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Frees a book and its associated string pointers.
+                     Performs null-checking on the book and strings.
+
+  SideEffects        Frees book and book's pointers.
+
+******************************************************************************/
 void free_book(struct book *node)
 {
 	if (node != NULL)
@@ -143,7 +203,13 @@ void free_book(struct book *node)
 	}
 }
 
+/**Function********************************************************************
 
+  Synopsis           Allocates heap space for new book.
+
+  SideEffects        Allocates heap space for new book.
+
+******************************************************************************/
 struct book *new_book()
 {
 	struct book *new = calloc(sizeof(struct book), 1);
@@ -151,6 +217,17 @@ struct book *new_book()
 	return new;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Appends the given book to a list of book nodes. Returns a
+                     new head pointer for the list of books. Should be called
+                     like: head = append(head, new_book); If the head pointer
+                     given is null, this will allocate space and return a fresh
+                     head pointer.
+
+  SideEffects        Allocates heap space for new book node.
+
+******************************************************************************/
 struct book_node *append(struct book_node *head, struct book *new)
 {
 	struct book_node *tmp = head, *end = malloc(sizeof(struct book_node));
@@ -171,6 +248,14 @@ struct book_node *append(struct book_node *head, struct book *new)
 	return head;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prints corrupted records in the given list of books.
+
+  SideEffects        none other than allocs/frees. Frees all memory that it
+                     allocs.
+
+******************************************************************************/
 void display_corrupt_records(struct book_node *head)
 {
 	struct book_node *corrupt = duplicate_ids(head), *temp;
@@ -195,6 +280,14 @@ void display_corrupt_records(struct book_node *head)
 	print_corrupt_authors(head);
 }
 
+/**Function********************************************************************
+
+  Synopsis           Gets all pairs of books that have matching author ids but
+                     mismatched author names.
+
+  SideEffects        none other than allocs
+
+******************************************************************************/
 struct book_pair *corrupt_authors(struct book_node *head)
 {
 	struct book_pair *corrupt = NULL;
@@ -217,6 +310,15 @@ struct book_pair *corrupt_authors(struct book_node *head)
 	return corrupt;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prints corrupted authors from given list of books.
+
+  SeeAlso            corrupt_authors
+
+  SideEffects        none other than allocs/frees. frees all memory it allocs.
+
+******************************************************************************/
 void print_corrupt_authors(struct book_node *head)
 {
 	struct book_pair *tmp, *corrupt = corrupt_authors(head);
@@ -240,6 +342,16 @@ void print_corrupt_authors(struct book_node *head)
 	printf("\n");
 }
 
+/**Function********************************************************************
+
+  Synopsis           Adds a pair of books to the given linked set of book pairs.
+                     If a pairing of (x,y) or (y,x) already exists in this book
+                     set, this function does nothing. Returns new head pointer
+                     for book set.
+
+  SeeAlso            struct book_pair
+
+******************************************************************************/
 struct book_pair *add_pair(struct book_pair *head, struct book *x, struct book *y)
 {
 	struct book_pair *tmp = head, *prev = head;
@@ -272,6 +384,16 @@ struct book_pair *add_pair(struct book_pair *head, struct book *x, struct book *
 	return head;
 }
 
+/**Function********************************************************************
+
+  Synopsis           Frees all struct book_pair in this set of book pairs
+                     IMPORTANT: does not free books
+
+  SeeAlso            struct book_pair
+
+  SideEffects        frees
+
+******************************************************************************/
 void free_pairs(struct book_pair *head)
 {
 	struct book_pair *tmp;
@@ -284,15 +406,11 @@ void free_pairs(struct book_pair *head)
 	}
 }
 
-static int author_error(struct book *x, struct book *y)
-{
-		if (x->l_author_id == y->l_author_id && ((strcmp(x->ptr_name, y->ptr_name) != 0) || (strcmp(x->ptr_surname, y->ptr_surname) != 0)))
-		{
-			return 1;
-		}
-		return 0;
-}
+/**Function********************************************************************
 
+  Synopsis           Prints all books in this list of books
+
+******************************************************************************/
 void print_books(struct book_node *head)
 {
 	struct book *b;
@@ -313,6 +431,11 @@ void print_books(struct book_node *head)
 	printf("================================================\n");
 }
 
+/**Function********************************************************************
+
+  Synopsis           Prints details about the given book
+
+******************************************************************************/
 void print_book(struct book *b)
 {
 	printf("Detailed information for==(%ld)==\n", b->l_book_id);
@@ -326,6 +449,11 @@ void print_book(struct book *b)
 	printf("=%ld= %31s %s\n", b->l_book_id, "Surname of the authour:", b->ptr_surname);
 }
 
+/**Function********************************************************************
+
+  Synopsis           Get the length of this list of books.
+
+******************************************************************************/
 size_t book_list_length(struct book_node *head)
 {
 	size_t length = 0;
@@ -338,35 +466,11 @@ size_t book_list_length(struct book_node *head)
 	return length;
 }
 
-struct book_node *all_with_id(struct book_node *head, long id)
-{
-	struct book_node *new_list = NULL;
+/**Function********************************************************************
 
-	while (head != NULL)
-	{
-		if (head->book->l_book_id == id)
-		{
-			new_list = append(new_list, head->book);
-		}
-		head = head->next;
-	}
+  Synopsis           Return a list of books that have duplicate ids.
 
-	return new_list;
-}
-
-struct book_node *duplicate(struct book_node *head)
-{
-	struct book_node *new_head = NULL;
-
-	while (head != NULL)
-	{
-		new_head = append(new_head, head->book);
-		head = head->next;
-	}
-
-	return new_head;
-}
-
+******************************************************************************/
 struct book_node *duplicate_ids(struct book_node *head)
 {
 	struct book_node *dups = NULL, *tmp = head;
@@ -383,6 +487,37 @@ struct book_node *duplicate_ids(struct book_node *head)
 	return dups;
 }
 
+/*---------------------------------------------------------------------------*/
+/* Definition of static functions                                            */
+/*---------------------------------------------------------------------------*/
+/**Function********************************************************************
+
+  Synopsis           Returns 1 if the given pairs of books have errors with
+                     their authors. A pair of books have an error with their
+                     authors if they share the same author id, but either the
+                     ptr_name or ptr_surname attributes differ between them.
+                     For example, if x and y have author id 33, but
+                     x.ptr_name = "Miguel" and y.ptr_name = "Michael", this
+                     function would return 1.
+
+******************************************************************************/
+static int author_error(struct book *x, struct book *y)
+{
+		if (x->l_author_id == y->l_author_id &&
+				((strcmp(x->ptr_name, y->ptr_name) != 0) ||
+				(strcmp(x->ptr_surname, y->ptr_surname) != 0)))
+		{
+			return 1;
+		}
+		return 0;
+}
+
+/**Function********************************************************************
+
+  Synopsis           Returns the number of books in this list that have the
+                     given id.
+
+******************************************************************************/
 static int count_with_id(struct book_node *head, long id)
 {
 	int count = 0;
@@ -397,29 +532,4 @@ static int count_with_id(struct book_node *head, long id)
 	}
 
 	return count;
-}
-
-struct book_node *mismatched_authors(struct book_node *head)
-{
-	struct book_node *mismatched = NULL, *temp = NULL, *to_free;
-
-	while (head != NULL)
-	{
-		temp = all_with_id(head->next, head->book->l_book_id);
-		if (temp != NULL)
-		{
-			mismatched = append(mismatched, head->book);
-		}
-
-		while (temp != NULL)
-		{
-			mismatched = append(mismatched, temp->book);
-			to_free = temp;
-			temp = temp->next;
-			free(to_free);
-		}
-		head = head->next;
-	}
-
-	return mismatched;
 }
