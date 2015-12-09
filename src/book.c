@@ -50,10 +50,12 @@ void free_list(struct book_node *head)
 
 void free_list_node(struct book_node *node)
 {
-	free_book(node->book);
-	free(node);
+	if (node != NULL)
+	{
+		free_book(node->book);
+		free(node);
+	}
 }
-
 
 struct book_node *remove_first_with_id(struct book_node *head, long id)
 {
@@ -123,10 +125,22 @@ struct book_node *remove_book(struct book_node *head, struct book *to_remove)
 
 void free_book(struct book *node)
 {
-	free(node->ptr_name);
-	free(node->ptr_title);
-	free(node->ptr_surname);
-	free(node);
+	if (node != NULL)
+	{
+		if (node->ptr_name != NULL)
+		{
+			free(node->ptr_name);
+		}
+		if (node->ptr_surname != NULL)
+		{
+			free(node->ptr_surname);
+		}
+		if (node->ptr_title != NULL)
+		{
+			free(node->ptr_title);
+		}
+		free(node);
+	}
 }
 
 

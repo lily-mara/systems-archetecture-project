@@ -26,6 +26,8 @@ struct prog_info
 	struct book_node *first;
 	int cmd_count;
 	pthread_t *autosave_thread;
+	pthread_mutex_t book_mutex;
+	struct save_thread_args autosave_args;
 };
 
 //Prototypes
@@ -51,6 +53,18 @@ int main(void)
 
 	info.first = NULL;
 	info.cmd_count = 0;
+
+	int status = pthread_mutex_init(&info.book_mutex, NULL);
+	if (status != 0)
+	{
+		printf("FAILED TO INITIALIZE MUTEX, INIT RETURNED %d\n", status);
+		exit(1);
+	}
+
+	info.autosave_args.filename = NULL;
+	info.autosave_args.book_mutex = &info.book_mutex;
+	info.autosave_args.head = NULL;
+
 	info.autosave_thread = NULL;
 
 	show_menu(&info);
@@ -72,7 +86,7 @@ void show_menu(struct prog_info *info)
 	 */
 	char *filename;
 #else
-	char filename[] = DEFAULT_AUTOSAVE_FILENAME;
+	char filename[] = DEFAULT_FILENAME;
 #endif /* DEBUG */
 
 	do {
@@ -101,8 +115,9 @@ void show_menu(struct prog_info *info)
 			get_status = get_int(&opc);
 			if (get_status == GET_USR_ENTERED_CTRLD)
 			{
+				pthread_mutex_lock(&info->book_mutex);
 				free_list(info->first);
-				stop_autosave(info->autosave_thread);
+				stop_autosave(info->autosave_thread, &info->autosave_args);
 				exit(0);
 			}
 
@@ -114,7 +129,9 @@ void show_menu(struct prog_info *info)
 
 		switch(opc) {
 			case 1:
+				pthread_mutex_lock(&info->book_mutex);
 				insert(info);
+				pthread_mutex_unlock(&info->book_mutex);
 				break;
 			case 2:
 				print_books(info->first);
@@ -126,18 +143,24 @@ void show_menu(struct prog_info *info)
 
 				if (get_status == GET_USR_ENTERED_CTRLD)
 				{
+					pthread_mutex_lock(&info->book_mutex);
 					free_list(info->first);
-					stop_autosave(info->autosave_thread);
+					stop_autosave(info->autosave_thread, &info->autosave_args);
+					pthread_mutex_destroy(&info->book_mutex);
 					exit(0);
 				}
 
 				print_book(find_by_id(info->first, id));
 				break;
 			case 4:
+				pthread_mutex_lock(&info->book_mutex);
 				search_and_update(info->first);
+				pthread_mutex_unlock(&info->book_mutex);
 				break;
 			case 5:
+				pthread_mutex_lock(&info->book_mutex);
 				prompt_remove_book(info);
+				pthread_mutex_unlock(&info->book_mutex);
 				break;
 			case 6:
 #ifdef DEBUG
@@ -147,8 +170,10 @@ void show_menu(struct prog_info *info)
 
 				if (filename == NULL)
 				{
+					pthread_mutex_lock(&info->book_mutex);
 					free_list(info->first);
-					stop_autosave(info->autosave_thread);
+					stop_autosave(info->autosave_thread, &info->autosave_args);
+					pthread_mutex_destroy(&info->book_mutex);
 					exit(0);
 				}
 
@@ -166,8 +191,10 @@ void show_menu(struct prog_info *info)
 				filename = get_string();
 				if (filename == NULL)
 				{
+					pthread_mutex_lock(&info->book_mutex);
 					free_list(info->first);
-					stop_autosave(info->autosave_thread);
+					stop_autosave(info->autosave_thread, &info->autosave_args);
+					pthread_mutex_destroy(&info->book_mutex);
 					exit(0);
 				}
 				new_list = import_books(filename);
@@ -180,14 +207,15 @@ void show_menu(struct prog_info *info)
 				}
 				else
 				{
+
+					pthread_mutex_lock(&info->book_mutex);
 					free_list(info->first);
 					info->first = new_list;
+					pthread_mutex_unlock(&info->book_mutex);
 				}
 #ifdef DEBUG
 				free(filename);
 #endif /* DEBUG */
-
-				info->first = new_list;
 				break;
 			case 8:
 				display_corrupt_records(info->first);
@@ -196,20 +224,19 @@ void show_menu(struct prog_info *info)
 				if (info->autosave_thread == NULL)
 				{
 					info->autosave_thread = malloc(sizeof(pthread_t));
-					start_autosave(info->autosave_thread, info->first);
+					info->autosave_args.head = info->first;
+					start_autosave(info->autosave_thread, &info->autosave_args);
 				}
 				else
 				{
-					stop_autosave(info->autosave_thread);
+					stop_autosave(info->autosave_thread, &info->autosave_args);
 					info->autosave_thread = NULL;
 				}
 				break;
 			case 0:
-				if (info->autosave_thread != NULL)
-				{
-					stop_autosave(info->autosave_thread);
-				}
+				stop_autosave(info->autosave_thread, &info->autosave_args);
 				free_list(info->first);
+				pthread_mutex_destroy(&info->book_mutex);
 				return;
 		}
 

@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "io.h"
 #include "book.h"
@@ -9,24 +10,16 @@
 
 static void *save_thread_entrypoint(void *);
 
-struct save_thread_args
-{
-	struct book_node *head;
-	char *filename;
-};
-
-
-void start_autosave(pthread_t *p, struct book_node *books)
+void start_autosave(pthread_t *p, struct save_thread_args *args)
 {
 #ifdef DEBUG
 	printf("[DEBUG] Enter autosave filename: ");
-	char *filename = get_string();
-	struct save_thread_args args = {books, filename};
+	args->filename = get_string();
 #else /* DEBUG */
-	struct save_thread_args args = {books, DEFAULT_AUTOSAVE_FILENAME};
+	strcpy(args->filename, DEFAULT_AUTOSAVE_FILENAME);
 #endif /* DEBUG */
 
-	int status = pthread_create(p, NULL, save_thread_entrypoint, (void *) &args);
+	int status = pthread_create(p, NULL, save_thread_entrypoint, (void *)args);
 	if (status)
 	{
 		printf("\t\tCould not acquire thread. Autosave failed.\n");
@@ -43,32 +36,27 @@ static void *save_thread_entrypoint(void *b)
 #endif /* DEBUG */
 	int old_cancel_state;
 
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_cancel_state);
-#ifdef DEBUG
-	status = export_books(books, args->filename);
-	printf("[DEBUG] Autosaved. Export function returned: %d\n", status);
-#else /* DEBUG */
-	export_books(books, args->filename);
-#endif /* DEBUG */
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_cancel_state);
-
-	while(1)
+	for (;;)
 	{
-		sleep(AUTOSAVE_SECONDS);
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_cancel_state);
 #ifdef DEBUG
+		pthread_mutex_lock(args->book_mutex);
 		status = export_books(books, args->filename);
+		pthread_mutex_unlock(args->book_mutex);
 		printf("[DEBUG] Autosaved. Export function returned: %d\n", status);
 #else /* DEBUG */
+		pthread_mutex_lock(args->book_mutex);
 		export_books(books, args->filename);
+		pthread_mutex_unlock(args->book_mutex);
 #endif /* DEBUG */
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_cancel_state);
+		sleep(AUTOSAVE_SECONDS);
 	}
 
 	pthread_exit(NULL);
 }
 
-void stop_autosave(pthread_t *p)
+void stop_autosave(pthread_t *p, struct save_thread_args *args)
 {
 	int x, *y;
 	y = &x;
@@ -78,5 +66,14 @@ void stop_autosave(pthread_t *p)
 		pthread_cancel(*p);
 		pthread_join(*p, (void **) &y);
 		free(p);
+	}
+
+	if (args != NULL)
+	{
+		if (args->filename != NULL)
+		{
+			free(args->filename);
+			args->filename = NULL;
+		}
 	}
 }
